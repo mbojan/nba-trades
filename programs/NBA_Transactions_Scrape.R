@@ -20,7 +20,7 @@ library(stringi)
 library(tidyr)
 library(reshape2)
 # ----------------------------------------------------------------------------------------
-setwd("/Users/Admin/Dropbox/Post-Doc Files/The Lab (Blog Site)/Sports Transactions SNA Project")
+setwd("~./NBA_SNA_Project")
 # ----------------------------------------------------------------------------------------
 base.url <- "http://www.prosportstransactions.com/basketball/Search/SearchResults.php?Player=&Team=&BeginDate=1976-08-05&EndDate=2020-01-14&PlayerMovementChkBx=yes&Submit=Search&start="
 seq.df <- data.frame(pg.no = 0:1653) %>%
@@ -48,5 +48,5 @@ for(i in bball.links) {
 }
 
 main.df$Date <- as.Date(main.df$Date, format = "%Y-%m-%d")
-save(main.df, file = "NBA_Transactions.RData")
+save(main.df, file = "data/NBA_Transactions.RData")
 # ----------------------------------------------------------------------------------------
