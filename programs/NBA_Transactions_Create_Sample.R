@@ -32,8 +32,8 @@ library(tidyr)
 library(reshape2)
 # ----------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------
-setwd("/Users/Admin/Dropbox/Post-Doc Files/The Lab (Blog Site)/Sports Transactions SNA Project")
-load("NBA_Transactions.RData")
+setwd("~./NBA_SNA_Project")
+load("data/NBA_Transactions.RData")
 # ----------------------------------------------------------------------------------------
 # Find trade partners for each listed trade
   trade.df <- main.df %>%
