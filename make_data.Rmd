@@ -1,0 +1,217 @@
+---
+title: "Make data files"
+output: 
+  github_document:
+    toc: true
+editor_options: 
+  chunk_output_type: console
+---
+
+---
+
+```{r setup, include=FALSE}
+library(tibble)
+library(dplyr)
+library(tidyr)
+library(stringi)
+library(lubridate)
+library(intervals)
+library(igraph)
+requireNamespace("here")
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  cache = FALSE
+)
+```
+
+Processing the files from `data-src` to produce data frames and igraph/network objects for analysis.
+
+The exact way in which the `gl200210.Rdata` was created is not 100% recovered thus we create the data files based on `wgl.Rdata`. Thus some of the code below is not executed until the full pipeline is re-checked.
+
+
+# Trade data
+
+## From source files
+
+> Code in this section is not run.
+
+Load original data files to separate environments (I'm not sure what object names are and where):
+
+```{r load-data, eval = FALSE}
+adata <- new.env()
+load(here::here("data-src", "data", "NBA_AnalysisData.RData"), envir=adata)
+ls(adata)
+
+tdata <- new.env()
+load(here::here("data-src", "data", "NBA_Transactions.RData"), envir=tdata)
+ls(tdata)
+
+mdata <- new.env()
+load(here::here("data", "NBA_Meta.RData"), envir=mdata)
+ls(mdata)
+
+# Add rowid for back checking
+main.df <- tdata$main.df %>%
+  as_tibble() %>%
+  tibble::rowid_to_column(".rowid")
+```
+
+Load standings data for team and division names:
+
+```{r load-standings, eval = FALSE}
+standings <- readRDS(here::here("data", "standings.rds")) %>%
+  mutate(
+    team_name = map_chr(strsplit(full_team_name, " "), tail, 1),
+    Team = recode(team_name, "SuperSonics"="Sonics") # For joining with `standings`
+  )
+```
+
+Create edgelist
+
+```{r tradedf, eval=FALSE}
+trade.df <- main.df %>%
+  as_tibble() %>%
+  select(.rowid, Date, Team, Notes) %>%
+  mutate( 
+    # Trade has "trade with" in `Notes` field...
+    is_trade = grepl("trade with ", Notes),
+    # ... but does not have the following phrases
+    has_cancelled = grepl("cancelled ", Notes),
+    has_rescinded = grepl("rescinded ", Notes),
+    has_nullified = grepl("nullified ", Notes),
+    has_voided = grepl("voided ", Notes)
+  ) %>%
+  filter(is_trade) %>%
+  filter_at(vars(starts_with("has_")), all_vars(!.)) %>%
+  select(-starts_with("has_"), -is_trade) %>%
+  mutate( 
+    # Remove stuff in parentheses from `Notes`
+    notes = gsub("\\s*\\([^\\)]+\\)","", Notes),
+    # Extract unique words starting with capital letter or digit (prospective team names)
+    partner = map(stri_extract_all_regex(
+      notes,
+      paste0('\\b', paste0(unique(standings$Team), collapse="|"), '\\b'),
+    ), unique),
+    # Count extracted names
+    num_trade_partners = map_int(partner, length)
+  ) %>%
+  transmute(
+    team1 = Team,
+    team2 = partner,
+    date = Date,
+    id = .rowid,
+  ) %>%
+  unnest("team2")
+```
+
+
+
+## Load seasonal weighted igraph objects
+
+List of seasonal weighted igraph objects should be created from the items above. At this moment we just load it and create edge and vertex dataframes from it.
+
+```{r load-wgl}
+load(here::here("data", "wgl.Rdata"))
+```
+
+
+
+## Vertex database
+
+A data frame for `season` x `name` with:
+
+- `name` -- time-constant "franchise name"
+- `label` -- time-varying team name
+- `div` -- division name
+- `season`, `season_from`, `season_to` -- season dates
+
+```{r vdb}
+vdb <- graphlist %>%
+  setNames(nm = vapply(graphlist, graph_attr, character(1), name = "season")) %>%
+  lapply(igraph::as_data_frame, what = "vertices") %>%
+  bind_rows(.id = "season") %>%
+  as_tibble() %>%
+  separate(season, into = c("season_from", "season_to"), remove = FALSE) %>%
+  mutate(
+    across(starts_with("season_"), as.integer)
+  )
+vdb
+```
+
+
+
+
+## Edge database
+
+A data frame for `season` x `from` x `to` where `from < to` with:
+
+- `from`, `to` -- franchise names
+- `season`, `season_from`, `season_to` -- season dates
+- `weight` -- number of trades between `from` and `to` in `season`
+
+```{r edb}
+edb <- graphlist %>%
+  setNames(nm = vapply(graphlist, graph_attr, character(1), name = "season")) %>%
+  lapply(igraph::as_data_frame, what = "edges") %>%
+  bind_rows(.id = "season") %>%
+  as_tibble() %>%
+  separate(season, into = c("season_from", "season_to"), remove = FALSE) %>%
+  mutate(
+    across(starts_with("season_"), as.integer),
+    .from = pmin(from, to),
+    .to = pmax(from, to)
+  ) %>%
+  select(
+    from = .from, 
+    to = .to, 
+    season, 
+    season_from,
+    season_to,
+    weight
+  )
+edb
+```
+
+
+
+
+
+## Checks 
+
+Team names in `vdb` and `edb` match:
+
+```{r check}
+u_vdb_teams <- with(vdb, unique(name))
+u_edb_teams <- with(edb, unique(c(from, to)))
+stopifnot(all(u_vdb_teams %in% u_edb_teams))
+stopifnot(all(u_edb_teams %in% u_vdb_teams))
+```
+
+
+## Save
+
+```{r save}
+saveRDS(vdb, file = here::here("data", "df-vdb.rds"))
+saveRDS(edb, file = here::here("data", "df-edb.rds"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Include folded session info -->
+<details>
+<summary>Session info</summary>
+```{r session-info}
+sessioninfo::session_info()
+```
+</details>
