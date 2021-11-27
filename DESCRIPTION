@@ -1,0 +1,18 @@
+Package: nba-trades
+Type: Book
+Title: Do NBA Teams Avoid Trading within Their Own Division?
+Authors@R: c(
+  person(given = "Jimi", family = "Adams"),
+  person(given = "Michal", family = "Bojanowski",
+    email = "michal2992@gmail.com", 
+    comment = c(ORCID = "0000-0001-7503-852X"))
+  )
+URL: https://mbojan.github.io/nba-trades
+Imports: 
+  dplyr,
+  knitr,
+  here,
+  igraph,
+  ergm,
+  ergm.count,
+  ggplot2
