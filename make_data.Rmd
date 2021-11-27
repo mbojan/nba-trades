@@ -10,7 +10,6 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-library(tibble)
 library(dplyr)
 library(tidyr)
 library(stringi)
@@ -27,93 +26,180 @@ knitr::opts_chunk$set(
 
 Processing the files from `data-src` to produce data frames and igraph/network objects for analysis.
 
-The exact way in which the `gl200210.Rdata` was created is not 100% recovered thus we create the data files based on `wgl.Rdata`. Thus some of the code below is not executed until the full pipeline is re-checked.
 
 
-# Trade data
 
-## From source files
+# Trades data
 
-> Code in this section is not run.
+Load trades data from Zachary Richardson. Group trades into seasons using April 1 of each year.
 
-Load original data files to separate environments (I'm not sure what object names are and where):
+```{r}
+e <- new.env()
+load(here::here("data-src", "data", "NBA_AnalysisData.RData"), envir=e)
 
-```{r load-data, eval = FALSE}
-adata <- new.env()
-load(here::here("data-src", "data", "NBA_AnalysisData.RData"), envir=adata)
-ls(adata)
-
-tdata <- new.env()
-load(here::here("data-src", "data", "NBA_Transactions.RData"), envir=tdata)
-ls(tdata)
-
-mdata <- new.env()
-load(here::here("data", "NBA_Meta.RData"), envir=mdata)
-ls(mdata)
-
-# Add rowid for back checking
-main.df <- tdata$main.df %>%
-  as_tibble() %>%
-  tibble::rowid_to_column(".rowid")
-```
-
-Load standings data for team and division names:
-
-```{r load-standings, eval = FALSE}
-standings <- readRDS(here::here("data", "standings.rds")) %>%
+trades <- e$trade.df_long |>
+  select(-season) |> # This one is wrong
   mutate(
-    team_name = map_chr(strsplit(full_team_name, " "), tail, 1),
-    Team = recode(team_name, "SuperSonics"="Sonics") # For joining with `standings`
+    season_from = case_when(
+      month(Date) >= 4 ~ as.numeric(year(Date)),
+      month(Date) <= 3 ~ as.numeric(year(Date)) - 1,
+      TRUE ~ as.numeric(NA)
+    ),
+    season_to = season_from + 1,
+    season = paste0(season_from, "-", season_to)
   )
 ```
 
-Create edgelist
 
-```{r tradedf, eval=FALSE}
-trade.df <- main.df %>%
-  as_tibble() %>%
-  select(.rowid, Date, Team, Notes) %>%
-  mutate( 
-    # Trade has "trade with" in `Notes` field...
-    is_trade = grepl("trade with ", Notes),
-    # ... but does not have the following phrases
-    has_cancelled = grepl("cancelled ", Notes),
-    has_rescinded = grepl("rescinded ", Notes),
-    has_nullified = grepl("nullified ", Notes),
-    has_voided = grepl("voided ", Notes)
-  ) %>%
-  filter(is_trade) %>%
-  filter_at(vars(starts_with("has_")), all_vars(!.)) %>%
-  select(-starts_with("has_"), -is_trade) %>%
-  mutate( 
-    # Remove stuff in parentheses from `Notes`
-    notes = gsub("\\s*\\([^\\)]+\\)","", Notes),
-    # Extract unique words starting with capital letter or digit (prospective team names)
-    partner = map(stri_extract_all_regex(
-      notes,
-      paste0('\\b', paste0(unique(standings$Team), collapse="|"), '\\b'),
-    ), unique),
-    # Count extracted names
-    num_trade_partners = map_int(partner, length)
-  ) %>%
-  transmute(
-    team1 = Team,
-    team2 = partner,
-    date = Date,
-    id = .rowid,
-  ) %>%
-  unnest("team2")
+# Seasonal networks
+
+Create a list of igraph objects with edge attribute `weight` counting the trades:
+
+```{r graphlist}
+graphlist <- lapply(
+  sort(unique(trades$season)),
+  function(s) {
+    g <- graph_from_data_frame( 
+      edb %>%
+        filter(season == s) %>%
+        select(P1, P2), 
+      directed=FALSE)
+    E(g)$weight <- count_multiple(g)
+    g <- simplify(g)
+    g$season <- s
+    g
+  }
+)
+```
+
+Since that was built from edges, non-trading teams are inadvertently excluded. Here, we're adding them back in.
+
+```{r graphlist-add-nodes}
+graphlist[[3]] <- add.vertices(graphlist[[3]], 1, name="Spurs", label="Spurs", div="Central")
+
+graphlist[[4]] <- add.vertices(graphlist[[4]], 1, name="Celtics", label="Celtics", div="Atlantic")
+graphlist[[4]] <- add.vertices(graphlist[[4]], 1, name="Warriors", label="Warriors", div="Pacific")
+
+graphlist[[5]] <- add.vertices(graphlist[[5]], 1, name="76ers", label="76ers", div="Atlantic")
+
+graphlist[[9]] <- add.vertices(graphlist[[9]], 1, name="Nets", label="Nets", div="Atlantic")
+graphlist[[9]] <- add.vertices(graphlist[[9]], 1, name="Suns", label="Suns", div="Pacific")
+
+graphlist[[10]] <- add.vertices(graphlist[[10]], 1, name="Nuggets", label="Nuggets", div="Midwest")
+graphlist[[10]] <- add.vertices(graphlist[[10]], 1, name="Knicks", label="Knicks", div="Atlantic")
+
+graphlist[[11]] <- add.vertices(graphlist[[11]], 1, name="Suns", label="Suns", div="Pacific")
+graphlist[[11]] <- add.vertices(graphlist[[11]], 1, name="Warriors", label="Warriors", div="Pacific")
+
+graphlist[[12]] <- add.vertices(graphlist[[12]], 1, name="Mavericks", label="Mavericks", div="Midwest")
+
+graphlist[[14]] <- add.vertices(graphlist[[14]], 1, name="Lakers", label="Lakers", div="Pacific")
+graphlist[[14]] <- add.vertices(graphlist[[14]], 1, name="Wizards", label="Bullets", div="Atlantic")
+graphlist[[14]] <- add.vertices(graphlist[[14]], 1, name="Jazz", label="Jazz", div="Midwest")
+
+graphlist[[15]] <- add.vertices(graphlist[[15]], 1, name="Pacers", label="Pacers", div="Central")
+graphlist[[15]] <- add.vertices(graphlist[[15]], 1, name="Celtics", label="Celtics", div="Atlantic")
+graphlist[[15]] <- add.vertices(graphlist[[15]], 1, name="Knicks", label="Knicks", div="Atlantic")
+graphlist[[15]] <- add.vertices(graphlist[[15]], 1, name="Cavaliers", label="Cavaliers", div="Central")
+
+graphlist[[16]] <- add.vertices(graphlist[[16]], 1, name="76ers", label="76ers", div="Atlantic")
+graphlist[[16]] <- add.vertices(graphlist[[16]], 1, name="Pacers", label="Pacers", div="Central")
+graphlist[[16]] <- add.vertices(graphlist[[16]], 1, name="Nets", label="Nets", div="Atlantic")
+graphlist[[16]] <- add.vertices(graphlist[[16]], 1, name="Magic", label="Magic", div="Atlantic")
+
+graphlist[[18]] <- add.vertices(graphlist[[18]], 1, name="Heat", label="Heat", div="Atlantic")
+graphlist[[18]] <- add.vertices(graphlist[[18]], 1, name="Celtics", label="Celtics", div="Atlantic")
+
+graphlist[[19]] <- add.vertices(graphlist[[19]], 1, name="Kings", label="Kings", div="Pacific")
+graphlist[[19]] <- add.vertices(graphlist[[19]], 1, name="Nets", label="Nets", div="Atlantic")
+graphlist[[19]] <- add.vertices(graphlist[[19]], 1, name="Bulls", label="Bulls", div="Central")
+graphlist[[19]] <- add.vertices(graphlist[[19]], 1, name="Cavaliers", label="Cavaliers", div="Central")
+
+graphlist[[20]] <- add.vertices(graphlist[[20]], 1, name="Pacers", label="Pacers", div="Central")
+graphlist[[20]] <- add.vertices(graphlist[[20]], 1, name="Rockets", label="Rockets", div="Midwest")
+graphlist[[20]] <- add.vertices(graphlist[[20]], 1, name="Jazz", label="Jazz", div="Midwest")
+graphlist[[20]] <- add.vertices(graphlist[[20]], 1, name="Mavericks", label="Mavericks", div="Midwest")
+
+graphlist[[21]] <- add.vertices(graphlist[[21]], 1, name="76ers", label="76ers", div="Atlantic")
+graphlist[[21]] <- add.vertices(graphlist[[21]], 1, name="Bulls", label="Bulls", div="Central")
+graphlist[[21]] <- add.vertices(graphlist[[21]], 1, name="Cavaliers", label="Cavaliers", div="Central")
+graphlist[[21]] <- add.vertices(graphlist[[21]], 1, name="Spurs", label="Spurs", div="Midwest")
+graphlist[[21]] <- add.vertices(graphlist[[21]], 1, name="Clippers", label="Clippers", div="Pacific")
+
+graphlist[[22]] <- add.vertices(graphlist[[22]], 1, name="Lakers", label="Lakers", div="Pacific")
+graphlist[[22]] <- add.vertices(graphlist[[22]], 1, name="Jazz", label="Jazz", div="Midwest")
+graphlist[[22]] <- add.vertices(graphlist[[22]], 1, name="Wizards", label="Wizards", div="Atlantic")
+graphlist[[22]] <- add.vertices(graphlist[[22]], 1, name="Spurs", label="Spurs", div="Midwest")
+
+graphlist[[23]] <- add.vertices(graphlist[[23]], 1, name="Heat", label="Heat", div="Atlantic")
+graphlist[[23]] <- add.vertices(graphlist[[23]], 1, name="Pacers", label="Pacers", div="Central")
+graphlist[[23]] <- add.vertices(graphlist[[23]], 1, name="Clippers", label="Clippers", div="Pacific")
+
+graphlist[[24]] <- add.vertices(graphlist[[24]], 1, name="Heat", label="Heat", div="Atlantic")
+graphlist[[24]] <- add.vertices(graphlist[[24]], 1, name="Jazz", label="Jazz", div="Midwest")
+graphlist[[24]] <- add.vertices(graphlist[[24]], 1, name="Knicks", label="Knicks", div="Atlantic")
+
+graphlist[[25]] <- add.vertices(graphlist[[25]], 1, name="Timberwolves", label="Timberwolves", div="Midwest")
+graphlist[[25]] <- add.vertices(graphlist[[25]], 1, name="Nets", label="Nets", div="Atlantic")
+
+graphlist[[26]] <- add.vertices(graphlist[[26]], 1, name="Jazz", label="Jazz", div="Midwest")
+
+graphlist[[27]] <- add.vertices(graphlist[[27]], 1, name="Heat", label="Heat", div="Atlantic")
+graphlist[[27]] <- add.vertices(graphlist[[27]], 1, name="Pacers", label="Pacers", div="Central")
+graphlist[[27]] <- add.vertices(graphlist[[27]], 1, name="Timberwolves", label="Timberwolves", div="Midwest")
+graphlist[[27]] <- add.vertices(graphlist[[27]], 1, name="Mavericks", label="Mavericks", div="Midwest")
+
+graphlist[[28]] <- add.vertices(graphlist[[28]], 1, name="Heat", label="Heat", div="Atlantic")
+graphlist[[28]] <- add.vertices(graphlist[[28]], 1, name="Lakers", label="Lakers", div="Pacific")
+
+graphlist[[29]] <- add.vertices(graphlist[[29]], 1, name="Timberwolves", label="Timberwolves", div="Northwest")
+
+graphlist[[30]] <- add.vertices(graphlist[[30]], 1, name="Mavericks", label="Mavericks", div="Southwest")
+graphlist[[30]] <- add.vertices(graphlist[[30]], 1, name="Spurs", label="Spurs", div="Southwest")
+graphlist[[30]] <- add.vertices(graphlist[[30]], 1, name="Warriors", label="Warriors", div="Pacific")
+
+graphlist[[31]] <- add.vertices(graphlist[[31]], 1, name="Heat", label="Heat", div="Southeast")
+graphlist[[31]] <- add.vertices(graphlist[[31]], 1, name="Clippers", label="Clippers", div="Pacific")
+graphlist[[31]] <- add.vertices(graphlist[[31]], 1, name="Kings", label="Kings", div="Pacific")
+graphlist[[31]] <- add.vertices(graphlist[[31]], 1, name="Wizards", label="Wizards", div="Southeast")
+graphlist[[31]] <- add.vertices(graphlist[[31]], 1, name="Knicks", label="Knicks", div="Atlantic")
+
+graphlist[[32]] <- add.vertices(graphlist[[32]], 1, name="Bucks", label="Bucks", div="Central")
+
+graphlist[[33]] <- add.vertices(graphlist[[33]], 1, name="Hawks", label="Hawks", div="Southeast")
+
+graphlist[[34]] <- add.vertices(graphlist[[34]], 1, name="Pacers", label="Pacers", div="Central")
+
+graphlist[[35]] <- add.vertices(graphlist[[35]], 1, name="Pistons", label="Pistons", div="Central")
+
+graphlist[[36]] <- add.vertices(graphlist[[36]], 1, name="Pistons", label="Pistons", div="Central")
+graphlist[[36]] <- add.vertices(graphlist[[36]], 1, name="Suns", label="Suns", div="Pacific")
+
+graphlist[[37]] <- add.vertices(graphlist[[37]], 1, name="Spurs", label="Spurs", div="Southwest")
+
+graphlist[[38]] <- add.vertices(graphlist[[38]], 1, name="Magic", label="Magic", div="Southeast")
+
+graphlist[[39]] <- add.vertices(graphlist[[39]], 1, name="Warriors", label="Warriors", div="Pacific")
+
+graphlist[[41]] <- add.vertices(graphlist[[41]], 1, name="Timberwolves", label="Timberwolves", div="Northwest")
+
+graphlist[[42]] <- add.vertices(graphlist[[42]], 1, name="Spurs", label="Spurs", div="Southwest")
+
+graphlist[[43]] <- add.vertices(graphlist[[43]], 1, name="Warriors", label="Warriors", div="Pacific")
+
+graphlist[[44]] <- add.vertices(graphlist[[44]], 1, name="Raptors", label="Raptors", div="Atlantic")
+```
+
+Save
+
+```{r graphlist-save}
+saveRDS(graphlist, file = "wgl.rds")
 ```
 
 
 
-## Load seasonal weighted igraph objects
 
-List of seasonal weighted igraph objects should be created from the items above. At this moment we just load it and create edge and vertex dataframes from it.
-
-```{r load-wgl}
-load(here::here("data", "wgl.Rdata"))
-```
+# Edge and node data frames
 
 
 
