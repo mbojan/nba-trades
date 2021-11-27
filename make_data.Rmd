@@ -51,22 +51,52 @@ trades <- e$trade.df_long |>
 ```
 
 
+
+
+
+
+# Divisions
+
+From data on standings
+
+```{r}
+divisions <- readRDS(here::here("data", "standings.rds")) %>%
+  distinct(
+    season_from,
+    division = purrr::map_chr(strsplit(division, " "), 1),
+    team_acronym = purrr::map_chr(strsplit(full_team_name, " "), tail, 1)
+  )
+```
+
+
+
+
 # Seasonal networks
 
 Create a list of igraph objects with edge attribute `weight` counting the trades:
 
 ```{r graphlist}
 graphlist <- lapply(
-  sort(unique(trades$season)),
+  sort(unique(trades$season_from)),
   function(s) {
-    g <- graph_from_data_frame( 
-      edb %>%
-        filter(season == s) %>%
-        select(P1, P2), 
-      directed=FALSE)
+    # Select trades
+    e <- trades %>%
+      filter(season_from == s) %>%
+      select(P1, P2)
+    # Nodes
+    n <- data.frame(
+      name = sort(unique(c(e$P1, e$P2)))
+    ) %>%
+      left_join(
+        divisions %>%
+          filter(season_from == s) %>%
+          rename(div = division),
+        by = c("name" = "team_acronym")
+      )
+    g <- graph_from_data_frame(e, vertices = n, directed=FALSE)
     E(g)$weight <- count_multiple(g)
     g <- simplify(g)
-    g$season <- s
+    g$season <- paste0(s, "-", s+1)
     g
   }
 )
@@ -190,10 +220,11 @@ graphlist[[43]] <- add.vertices(graphlist[[43]], 1, name="Warriors", label="Warr
 graphlist[[44]] <- add.vertices(graphlist[[44]], 1, name="Raptors", label="Raptors", div="Atlantic")
 ```
 
+
 Save
 
 ```{r graphlist-save}
-saveRDS(graphlist, file = "wgl.rds")
+saveRDS(graphlist, file = here::here("data", "wgl.rds"))
 ```
 
 
