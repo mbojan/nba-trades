@@ -12,6 +12,6 @@ Manuscript.html: Manuscript.Rmd data/nodes.rds data/edges.rds data/igraph-list.r
 
 publish: Manuscript.html
 	mkdir -p docs
-	cp $< docs/
+	cp $< docs/index.html
 
 .PHONY: default data publish
