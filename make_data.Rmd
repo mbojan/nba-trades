@@ -24,21 +24,52 @@ knitr::opts_chunk$set(
 )
 ```
 
-Processing the files from `data-src` to produce data frames and igraph/network objects for analysis.
+Processing the files created by Zachary Ricardson (in `data-src`) to produce data frames and igraph objects for analysis.
 
 
+# Team and franchiese names
 
-
-# Trades data
-
-Load trades data from Zachary Richardson. Group trades into seasons using April 1 of each year.
+Based on data on standings
 
 ```{r}
-e <- new.env()
-load(here::here("data-src", "data", "NBA_AnalysisData.RData"), envir=e)
+team_franchise <- readRDS(here::here("data", "standings.rds")) %>%
+  distinct(
+    season_from,
+    season_to,
+    team_acronym = purrr::map_chr(strsplit(full_team_name, " "), tail, 1)
+  ) %>%
+  mutate(
+    franchise = case_when(
+      # TODO: map season-teams to franchises
+      season_to <= 1978 & team_acronym == "Braves" ~ "Clippers",
+      season_from >= 2004 & season_to <= 2014 & team_acronym == "Bobcats" ~ "Hornets",
+      
+      TRUE ~ team_acronym # else
+    )
+  )
+```
 
-trades <- e$trade.df_long |>
-  select(-season) |> # This one is wrong
+
+
+
+# Data on trades
+
+Process data on trades.
+
+- Assign trades to seasons using April 1 as a cut off date.
+- Columns with team names are called `franchise1` and `franchise2` as the names pretend to "season-invariant" names of the franchises, not actual team names used in during seasons.
+
+```{r}
+load(here::here("data-src", "data", "NBA_AnalysisData.RData"), 
+     envir=NBA_AnalysisData <- new.env())
+
+trades <- NBA_AnalysisData$trade.df_long |>
+  as_tibble() |>
+  select(-season) |>
+  rename(
+    franchise1 = P1,
+    franchise2 = P2
+  ) |>
   mutate(
     season_from = case_when(
       month(Date) >= 4 ~ as.numeric(year(Date)),
@@ -48,8 +79,10 @@ trades <- e$trade.df_long |>
     season_to = season_from + 1,
     season = paste0(season_from, "-", season_to)
   )
-```
 
+# Make sure of canonical order
+stopifnot(with(trades, all(franchise1 < franchise2)))
+```
 
 
 
@@ -57,7 +90,9 @@ trades <- e$trade.df_long |>
 
 # Divisions
 
-From data on standings
+From data on standings extract info on assignment to divisions
+
+- Copy 2018-2019 season to 2019-2020
 
 ```{r}
 divisions <- readRDS(here::here("data", "standings.rds")) %>%
@@ -66,6 +101,12 @@ divisions <- readRDS(here::here("data", "standings.rds")) %>%
     division = purrr::map_chr(strsplit(division, " "), 1),
     team_acronym = purrr::map_chr(strsplit(full_team_name, " "), tail, 1)
   )
+divisions <- bind_rows(
+  divisions,
+  divisions %>%
+    filter(season_from == 2018) %>%
+    mutate(season_from = 2019)
+)
 ```
 
 
@@ -96,6 +137,7 @@ graphlist <- lapply(
     g <- graph_from_data_frame(e, vertices = n, directed=FALSE)
     E(g)$weight <- count_multiple(g)
     g <- simplify(g)
+    E(g)$weight <- sqrt(E(g)$weight)
     g$season <- paste0(s, "-", s+1)
     g
   }
