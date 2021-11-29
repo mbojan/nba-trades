@@ -10,4 +10,8 @@ data/nodes.rds data/edges.rds data/igraph-list.rds &: make_data.Rmd data/standin
 Manuscript.html: Manuscript.Rmd data/nodes.rds data/edges.rds data/igraph-list.rds NBA_Trades.html
 	$(render)
 
-.PHONY: default data
+publish: Manuscript.html
+	mkdir -p docs
+	cp $< docs/
+
+.PHONY: default data publish
