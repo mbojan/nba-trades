@@ -10,6 +10,11 @@ Authors@R: c(
 URL: https://mbojan.github.io/nba-trades
 Imports: 
   dplyr,
+  tibble,
+  tidyr,
+  purrr,
+  box,
+  withr,
   knitr,
   here,
   igraph,
