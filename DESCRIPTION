@@ -10,6 +10,9 @@ Authors@R: c(
 URL: https://mbojan.github.io/nba-trades
 Imports: 
   dplyr,
+  networkDynamic,
+  ndtv,
+  lubridate,
   tibble,
   tidyr,
   purrr,
