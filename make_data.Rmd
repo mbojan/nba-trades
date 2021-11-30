@@ -126,6 +126,8 @@ trades <- NBA_AnalysisData$trade.df_long |>
 
 # Make sure of canonical order
 stopifnot(with(trades, all(franchise1 < franchise2)))
+
+saveRDS(trades, file = here::here("data", "trades.rds"))
 ```
 
 
