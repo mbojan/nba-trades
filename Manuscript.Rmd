@@ -19,8 +19,10 @@ bibliography: nba_trades.bib
 ---
 
 ```{r setup, include=FALSE, cache=FALSE}
+requireNamespace("box")
 requireNamespace("knitr")
 requireNamespace("igraph")
+requireNamespace("intergraph")
 requireNamespace("withr")
 library(tibble)
 library(dplyr)
@@ -28,9 +30,16 @@ library(tidyr)
 library(purrr)
 library(ggplot2)
 
+# Functions from the 'codebox'
+box::use(
+  sna = codebox/sna[alpha]
+)
+
 knitr::opts_chunk$set(
   echo = FALSE
 )
+
+theme_set(theme_bw())
 ```
 
 
@@ -45,9 +54,10 @@ In sum, we therefore investigate how strongly division shapes trade partners amo
 
 # Data
 
-```{r load-nodes-and-edges}
+```{r load-data}
 vdb <- readRDS(here::here("data", "nodes.rds"))
 edb <- readRDS(here::here("data", "edges.rds"))
+graphlist <- readRDS(here::here("data", "igraph-list.rds"))
 ```
 
 Here, we draw on a database of all player transactions in the NBA from the beginning of the 1976 season---when the NBA merged with the ABA uniting major professional basketball in the US under one league---through the completion of the 2018-19 season [@richardson2020]. We compile this list of 1,977 trades into 43 annual trade networks, with the nodes representing teams, and each edge representing a unique trade between those teams. Each trade is assigned to the "trade season" which runs from the end of the previous season through the corresponding season's trade deadline.^[The opening of the trade season begins either (1) with the conclusion of the previous season's playoffs (early in the observed period), or on a specified date each summer (later in the observed window). Using these dates, there were no ambiguous trades that we were unable to attribute to a particular season.] The number of teams within each annual slice changes over time as the league gradually expanded from 22 to 30 teams.^[Unless otherwise specifically noted, all historical accounts in the text were pulled from Wikipedia and confirmed on nba.com.]. The number of trades observed within each slice varies from year to year (range 22-86; see Figure 1), and teams exhibit differing rates of trading (see Figure 2). 
@@ -218,19 +228,15 @@ While these mixing matrices may appear to support the prohibition against teams 
 
 Our second analytic step therefore addresses these conditional distribution assumptions that are not apparent from the mixing matrices alone. To accomplish these properly conditioned versions of the test we use what is known as the $\alpha$-index for computing segregation in networks [@moody2001]. Essentially, what the $\alpha$-index does is allow the estimates of frequency of ties between teams from the same division to be estimated as an odds ratio, which is properly conditioned to account for the number of trade partners one would expect to be within and across division, given the observed base rates of trading by each team, *if* they chose with whom to trade without respect to division [@Bojanowski:2014aa]. Since this is a homophily statistic, testing for nodes within the *same* division, a significantly *negative* $\alpha$-index would be consistent with teams following the proposed prohibition. Figure 4 presents this $\alpha$-index for each trade season individually. What can be seen here is that in none of the observed trade years does the $\alpha$-index differ significantly from random expectation (OR=1). In other words this improved conditional form of the test suggests that there is no observed prohibition against teams trading within division.
 
-```{r load-graphlist}
-graphlist <- readRDS(here::here("data", "igraph-list.rds"))
-```
-
-
 <!--
 ![Figure 4. **Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index )](segregation_files/figure-gfm/or2-1.png)
 -->
 
-```{r alphas, eval=FALSE}
-nl <- lapply(graphlist, intergraph::asNetwork)
+```{r alphas, fig.cap="**Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index)."}
+netlist <- lapply(graphlist, intergraph::asNetwork)
+names(netlist) <- vapply(graphlist, igraph::get.graph.attribute, character(1), "season")
 
-alpha <- lapply(nl, OR2, "div") %>%
+alpha <- lapply(netlist, alpha, "division") %>%
   bind_rows(.id = "season") %>%
   mutate(
     season_start = as.numeric(substr(season, 1, 4))
