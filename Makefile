@@ -5,14 +5,16 @@
 # section "Rules with Grouped Targets". These are supported by `make` since 
 # the version 4.3. 
 $(if $(filter grouped-target,${.FEATURES}) \
-	,$(info Your version of GNU make supports grouped targets) \
-	,$(warning Your version of GNU make DOES NOT support grouped targets. Parallel procesing may lead some of the steps to be executed unnecesarily more than once or perhaps to err.))
+	,,$(warning Your version of GNU make DOES NOT support grouped targets. Parallel procesing may lead some of the steps to be executed unnecesarily more than once or perhaps to err.))
 
 render=Rscript -e 'rmarkdown::render("$<")'
 runr=Rscript $<
 
 
-# Display phony targets ---------------------------------------------------
+# Display help -------------------------------------------------------------
+
+# Document phony targets with descriptions on the same line preceded with
+# double #es.
 
 help:	                       ## Show this help.
 	@echo
@@ -37,11 +39,18 @@ $(data_files) &: make_data.Rmd data/standings.rds data-src/data/NBA_AnalysisData
 data/standings.rds data/stats_per_game.rds &: data/standings.R
 	$(runr)
 
-
-
-
 .PHONY: data
 
+
+
+# Models ------------------------------------------------------------------
+
+ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds &: ergm-pooled.R data/igraph-list.rds 
+	Rscript ergm-pooled.R
+
+estimate: ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds   ## Estimate ERGMs
+
+.PHONY: estimate
 
 
 
