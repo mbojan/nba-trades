@@ -1,0 +1,149 @@
+---
+title: "Post-estimation analysis of valued ERGMs fitted to pooled data"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE, cache=FALSE}
+library(ggplot2)
+library(ergm.count)
+requireNamespace("box")
+box::use(
+  funs.utils = codebox/misc[...]
+)
+
+knitr::opts_chunk$set(
+  echo = FALSE
+)
+```
+
+
+# Model 1
+
+```{r model1-load}
+fit <- readRDS("ergm-pooled1.rds")
+```
+
+Summary:
+
+```{r model1-summary}
+summary(fit)
+```
+
+Model table:
+
+```{r model1-table}
+model1_table <- summary(fit) |>
+  coef() |>
+  as.data.frame() |>
+  tibble::rownames_to_column(var = "effect") |>
+  dplyr::mutate(
+    season = stringi::stri_extract_first_regex(effect, "[0-9]{4}-[0-9]{4}"),
+    nodefactor = grepl("nodefactor", effect)
+  ) |>
+  dplyr::transmute(
+    Effect = ifelse(
+      nodefactor,
+      season,
+      "*Homophily*"
+    ),
+    Estimate,
+    SE = `Std. Error`,
+    `95% CI` = paste0(
+      "(",
+      qnorm(0.025, mean = Estimate, sd = SE) |>
+        round(2) |>
+        format(nsmall=2),
+      "; ",
+      qnorm(0.975, mean = Estimate, sd = SE) |>
+        round(2) |>
+        format(nsmall=2),
+      ")"
+    ),
+    `p-value` = round(`Pr(>|z|)`, 3)
+  ) |>
+  (function(d) {
+    dplyr::bind_rows(
+      tibble::tibble(Effect = "*Seasonal base rates*"),
+      d
+    )
+  })()
+
+withr::with_options(
+  list(knitr.kable.NA = ""), {
+  knitr::kable(model1_table, align = "lrrrr") |>
+    print()
+  })
+```
+
+
+Model table for the main text:
+
+```{r model1-table-short}
+model1_table_short <- model1_table |>
+  dplyr::filter(Effect == "*Homophily*")
+
+saveRDS(model1_table_short, "model1-table-short.rds")
+
+withr::with_options(
+  list(knitr.kable.NA = ""),
+  model1_table_short |>
+    knitr::kable(align = "lrrrr") |>
+    print()
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+# Model 2
+
+Seasons 1976-2004.
+
+```{r model2-load}
+fit <- readRDS("ergm-pooled2.rds")
+```
+
+Summary:
+
+```{r model2-summary}
+summary(fit)
+```
+
+
+
+
+
+# Model 3
+
+Seasons 2005-2019.
+
+```{r model3-load}
+fit <- readRDS("ergm-pooled3.rds")
+```
+
+Summary:
+
+```{r model3-summary}
+summary(fit)
+```
+
+
+
+
+
+<!-- Include folded session info -->
+<details>
+<summary>Session info</summary>
+```{r session-info}
+sessioninfo::session_info()
+```
+</details>

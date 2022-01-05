@@ -271,7 +271,7 @@ Once properly conditioning the test for each of these necessary caveats, we find
 
 To summarize the results from Figure 5 in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume. These results are presented in Table \@ref(tab:model1-table-short).
 
-```{r model1-table-short, eval=FALSE}
+```{r model1-table-short}
  withr::with_options(
    list(knitr.kable.NA = ""),
    readRDS("model1-table-short.rds") |>
