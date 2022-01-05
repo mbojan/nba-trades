@@ -12,10 +12,19 @@ years <- 1976:2019 # Season (year-1)-year
 urls <- glue("{base_url}/NBA_{years}.html")
 cat(urls, file=here::here("data", "fetchlist.txt"), sep="\n")
 
-# NOW execute `data/fetch.sh` to wget all the pages and save them to
-# `data/standings` folder. What follows assumes that they are there.
+# Use `wget` to fetch all the pages and save them to `data/standings` folder.
+system2(
+  "wget",
+  args = c(
+    paste0("-i ", here::here("data", "fetchlist.txt")),
+    "-w 6",
+    "--no-check-certificate",
+    "--user-agent=\"Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0\"",
+    paste0("-P ", here::here("data", "standings"))
+  )
+)
 
-# List of downloaded files
+# Paths to downloaded files
 fnames <- list.files(
   here::here("data", "standings"),
   "^NBA_[0-9]{4}\\.html",
