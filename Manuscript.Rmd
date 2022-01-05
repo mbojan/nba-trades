@@ -232,7 +232,7 @@ Our second analytic step therefore addresses these conditional distribution assu
 ![Figure 4. **Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index )](segregation_files/figure-gfm/or2-1.png)
 -->
 
-```{r alphas, fig.cap="**Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index)."}
+```{r alphas, fig.cap="**Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\\alpha$-index)."}
 netlist <- lapply(graphlist, intergraph::asNetwork)
 names(netlist) <- vapply(graphlist, igraph::get.graph.attribute, character(1), "season")
 
