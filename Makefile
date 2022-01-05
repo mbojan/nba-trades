@@ -45,8 +45,11 @@ data/standings.rds data/stats_per_game.rds &: data/standings.R
 
 # Models ------------------------------------------------------------------
 
+# Pooled ERGMs
 ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds &: ergm-pooled.R data/igraph-list.rds 
 	Rscript ergm-pooled.R
+
+
 
 estimate: ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds   ## Estimate ERGMs
 
