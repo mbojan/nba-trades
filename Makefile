@@ -11,7 +11,7 @@ $(data_files) &: make_data.Rmd data/standings.rds data-src/data/NBA_AnalysisData
 Manuscript.html: Manuscript.Rmd data/nodes.rds data/edges.rds data/igraph-list.rds NBA_Trades.html
 	$(render)
 
-publish: Manuscript.html
+publish: Manuscript.html NBA_Trades.html
 	mkdir -p docs
 	cp $< docs/index.html
 
