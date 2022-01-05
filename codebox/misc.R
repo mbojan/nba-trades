@@ -2,7 +2,10 @@
 #' 
 #' @param envar character; name of the variable to inspect
 #' 
-#' @return Integer number of cores. [control.ergm()] expects 0 for no parallel estimation.
+#' @return Integer number of cores. [control.ergm()] expects 0 for no parallel
+#'   estimation.
+#' 
+#' @export
 
 get_r_cores <- function(envar = "R_CORES") {
   v <- Sys.getenv(envar)
