@@ -11,6 +11,7 @@ box::use(
   codebox/misc[...]
 )
 
+set.seed(6666)
 r_cores <- max(2, get_r_cores())
 
 
