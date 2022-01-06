@@ -13,7 +13,7 @@ date: November 29, 2021
 description: "Within US professional sports, trades within one's own division are often perceived to be disadvantageous. We ask how common this practice is. To examine this question, we construct a date-stamped network of all trades in the NBA between June 1976 and May 2019. We then use yearly weighted exponential random graph models to estimate the likelihood of teams avoiding within-division trade partners, and whether that pattern changes through time. In addition to the empirical question, this analysis serves to demonstrate the necessity and difficulty of constructing the proper baseline for statistical comparison. We find limited-to-no support for the popular perception."
 output: 
   distill::distill_article:
-    code_folding: true
+    code_folding: false
 link-citations: true
 bibliography: nba_trades.bib
 ---
@@ -314,54 +314,17 @@ In short, the empirical patterns do not support the popular claim that NBA teams
 
 It is worth mentioning that the models we have estimated in the results for Figure 5 are actually no different from what would have been possible through a generalized linear model predicting the (weighted) number of ties observed between pairs of teams. However, the value of introducing the weighted ERGM approach with these data is that if subsequent researchers want to take the next step to provide an explanatory account that further examines which teams are likely to trade with which others, this modeling framework would allow for the simultaneous estimation of predictive factors that variously operate at the node level (e.g., is a team that finished lower in the previous year's standings more likely to trade), the dyad level (e.g., are teams with higher total salaries more likely to trade with other teams who have lower total salaries), or structural features above the dyad (e.g., the tendency to form trade-triples or larger configurations through multi-team deals). The GLM framework would not be able to estimate each of these types of features in such a model without violating model assumptions (e.g., some of these are explicitly modeling the *dependency* between multiple trades). As such, we hope that the illustration if how the weighted ERGM could be beneficial serves as a useful introduction to this modeling framework, which could be extended by future researchers using the data we provide.
 
+
+
+
 ## ERGM model fit {.appendix}
 
-Table: Full results for the ERG model fit to pooled data.
-
-|Effect                |   Estimate|        SE|95% CI         | p-value|
-|:---------------------|----------:|---------:|:--------------|-------:|
-|*Seasonal base rates* |           |          |               |        |
-|1976-1977             | -0.9026534| 0.0792530|(-1.06; -0.75) |   0.000|
-|1977-1978             | -0.8427925| 0.0724760|(-0.98; -0.70) |   0.000|
-|1978-1979             | -0.9263500| 0.0796106|(-1.08; -0.77) |   0.000|
-|1979-1980             | -0.8762352| 0.0771426|(-1.03; -0.73) |   0.000|
-|1980-1981             | -0.9910653| 0.0854415|(-1.16; -0.82) |   0.000|
-|1981-1982             | -0.9050884| 0.0754043|(-1.05; -0.76) |   0.000|
-|1982-1983             | -0.8069531| 0.0682278|(-0.94; -0.67) |   0.000|
-|1983-1984             | -0.9092292| 0.0766022|(-1.06; -0.76) |   0.000|
-|1984-1985             | -1.0526877| 0.0872369|(-1.22; -0.88) |   0.000|
-|1985-1986             | -1.0782139| 0.0930195|(-1.26; -0.90) |   0.000|
-|1986-1987             | -0.9198185| 0.0757693|(-1.07; -0.77) |   0.000|
-|1987-1988             | -0.9403157| 0.0781448|(-1.09; -0.79) |   0.000|
-|1988-1989             | -1.1192392| 0.0854069|(-1.29; -0.95) |   0.000|
-|1989-1990             | -1.1674130| 0.0852806|(-1.33; -1.00) |   0.000|
-|1990-1991             | -1.1015000| 0.0789942|(-1.26; -0.95) |   0.000|
-|1991-1992             | -1.3314738| 0.1014767|(-1.53; -1.13) |   0.000|
-|1992-1993             | -1.2131200| 0.0885597|(-1.39; -1.04) |   0.000|
-|1993-1994             | -1.2949074| 0.0953019|(-1.48; -1.11) |   0.000|
-|1994-1995             | -1.3952511| 0.1080338|(-1.61; -1.18) |   0.000|
-|1995-1996             | -1.2254082| 0.0852894|(-1.39; -1.06) |   0.000|
-|1996-1997             | -1.2243585| 0.0837553|(-1.39; -1.06) |   0.000|
-|1997-1998             | -1.1148373| 0.0727527|(-1.26; -0.97) |   0.000|
-|1998-1999             | -1.2492779| 0.0861211|(-1.42; -1.08) |   0.000|
-|1999-2000             | -1.2789135| 0.0904522|(-1.46; -1.10) |   0.000|
-|2000-2001             | -1.0430409| 0.0700097|(-1.18; -0.91) |   0.000|
-|2001-2002             | -1.0608807| 0.0696335|(-1.20; -0.92) |   0.000|
-|2002-2003             | -1.2653868| 0.0888219|(-1.44; -1.09) |   0.000|
-|2003-2004             | -1.0915922| 0.0733866|(-1.24; -0.95) |   0.000|
-|2004-2005             | -1.0507651| 0.0685301|(-1.19; -0.92) |   0.000|
-|2005-2006             | -1.0769347| 0.0703190|(-1.21; -0.94) |   0.000|
-|2006-2007             | -1.1925306| 0.0774736|(-1.34; -1.04) |   0.000|
-|2007-2008             | -1.1603188| 0.0759557|(-1.31; -1.01) |   0.000|
-|2008-2009             | -0.9697841| 0.0623303|(-1.09; -0.85) |   0.000|
-|2009-2010             | -0.9605862| 0.0613118|(-1.08; -0.84) |   0.000|
-|2010-2011             | -0.9335487| 0.0588953|(-1.05; -0.82) |   0.000|
-|2011-2012             | -1.1465080| 0.0721213|(-1.29; -1.01) |   0.000|
-|2012-2013             | -0.9791587| 0.0622563|(-1.10; -0.86) |   0.000|
-|2013-2014             | -0.9789426| 0.0643977|(-1.11; -0.85) |   0.000|
-|2014-2015             | -0.8316791| 0.0542273|(-0.94; -0.73) |   0.000|
-|2015-2016             | -1.0257114| 0.0647017|(-1.15; -0.90) |   0.000|
-|2016-2017             | -1.0875715| 0.0680398|(-1.22; -0.95) |   0.000|
-|2017-2018             | -1.0105469| 0.0640282|(-1.14; -0.89) |   0.000|
-|2018-2019             | -0.9172200| 0.0586872|(-1.03; -0.80) |   0.000|
-|*Homophily*           |  0.0099434| 0.0587577|(-0.11;  0.13) |   0.866|
+```{r}
+withr::with_options(
+  list(knitr.kable.NA = ""), {
+    knitr::kable(
+      readRDS(file = "model1-table.rds"), 
+      caption = "Full results for the ERG model fit to pooled data.",
+      align = "lrrrr")
+  })
+```

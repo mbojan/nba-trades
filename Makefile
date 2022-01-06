@@ -49,9 +49,8 @@ data/standings.rds data/stats_per_game.rds &: data/standings.R
 ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds &: ergm-pooled.R data/igraph-list.rds 
 	Rscript ergm-pooled.R
 
-model1-table-short.rds: ergm-pooled-results.Rmd ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds
+model1-table.rds model1-table-short.rds &: ergm-pooled-results.Rmd ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds
 	$(render)
-
 
 # Seasonal ERGMs
 ergm-seasonal.rds: ergm-seasonal.R data/igraph-list.rds
@@ -68,7 +67,7 @@ estimate: ergm-pooled1.rds ergm-pooled2.rds ergm-pooled3.rds   ## Estimate ERGMs
 
 # Manuscript --------------------------------------------------------------
 
-Manuscript.html: Manuscript.Rmd data/nodes.rds data/edges.rds data/igraph-list.rds NBA_Trades.html model1-table-short.rds ergm-seasonal-db.rds
+Manuscript.html: Manuscript.Rmd data/nodes.rds data/edges.rds data/igraph-list.rds NBA_Trades.html model1-table-short.rds ergm-seasonal-db.rds model1-table.rds
 	$(render)
 	
 paper: Manuscript.html      ## Render manuscript.

@@ -70,6 +70,8 @@ model1_table <- summary(fit) |>
     )
   })()
 
+saveRDS(model1_table, file = "model1-table.rds")
+
 withr::with_options(
   list(knitr.kable.NA = ""), {
   knitr::kable(model1_table, align = "lrrrr") |>
