@@ -16,6 +16,7 @@ output:
     toc: true
     code_folding: false
 link-citations: true
+repository_url: https://github.com/mbojan/nba-trades
 bibliography: nba_trades.bib
 ---
 
