@@ -61,7 +61,7 @@ edb <- readRDS(here::here("data", "edges.rds"))
 graphlist <- readRDS(here::here("data", "igraph-list.rds"))
 ```
 
-Here, we draw on a database of all player transactions in the NBA from the beginning of the 1976 season---when the NBA merged with the ABA uniting major professional basketball in the US under one league---through the completion of the 2018-19 season [@richardson2020]. We compile this list of 1,977 trades into 43 annual trade networks, with the nodes representing teams, and each edge representing a unique trade between those teams. Each trade is assigned to the "trade season" which runs from the end of the previous season through the corresponding season's trade deadline.^[The opening of the trade season begins either (1) with the conclusion of the previous season's playoffs (early in the observed period), or on a specified date each summer (later in the observed window). Using these dates, there were no ambiguous trades that we were unable to attribute to a particular season.] The number of teams within each annual slice changes over time as the league gradually expanded from 22 to 30 teams.^[Unless otherwise specifically noted, all historical accounts in the text were pulled from Wikipedia and confirmed on nba.com.]. The number of trades observed within each slice varies from year to year (range 22-86; see Figure 1), and teams exhibit differing rates of trading (see Figure 2). 
+Here, we draw on a database of all player transactions in the NBA from the beginning of the 1976 season---when the NBA merged with the ABA uniting major professional basketball in the US under one league---through the completion of the 2018-19 season [@richardson2020]. We compile this list of 1,977 trades into 43 annual trade networks, with the nodes representing teams, and each edge representing a unique trade between those teams. Each trade is assigned to the "trade season" which runs from the end of the previous season through the corresponding season's trade deadline.^[The opening of the trade season begins either (1) with the conclusion of the previous season's playoffs (early in the observed period), or on a specified date each summer (later in the observed window). Using these dates, there were no ambiguous trades that we were unable to attribute to a particular season.] The number of teams within each annual slice changes over time as the league gradually expanded from 22 to 30 teams.^[Unless otherwise specifically noted, all historical accounts in the text were pulled from Wikipedia and confirmed on nba.com.]. The number of trades observed within each slice varies from year to year (range 22-86; see Figure \@ref(fig:trades-per-year)), and teams exhibit differing rates of trading (see Figure \@ref(fig:trades-per-team)). 
 
 <!--
 ![Figure 1. **Number of Trades by Year.** (normalized to a per team rate)](EDA_files/figure-gfm/trades-per-season-seasonwise-1.png)
@@ -93,7 +93,7 @@ edb %>%
   )
 ```
 
-Figure 1 presents the trend of number of trades per season. Since, the number of teams varies across the window, we standardize these values to represent the number of trades *per team* in each season. This pattern shows a roughly U-shaped trend, with the highest rates of trades (nearing 2 per team) occurring early and late in the period and the lowest rates occurring in the early 1990s. Notably, this low-point came *after* the introduction of unrestricted free-agency (in 1988), allowing players to sign with any team after their contract expires. As a corollary, Figure 2 presents the frequency distribution of trades per team across the full observed window. There are some teams (e.g., the Spurs) who consistently trade less frequently, and others who are much more trade active (e.g., the Mavericks).
+Figure \@ref(fig:trades-per-year) presents the trend of number of trades per season. Since, the number of teams varies across the window, we standardize these values to represent the number of trades *per team* in each season. This pattern shows a roughly U-shaped trend, with the highest rates of trades (nearing 2 per team) occurring early and late in the period and the lowest rates occurring in the early 1990s. Notably, this low-point came *after* the introduction of unrestricted free-agency (in 1988), allowing players to sign with any team after their contract expires. As a corollary, Figure \@ref(fig:trades-per-team) presents the frequency distribution of trades per team across the full observed window. There are some teams (e.g., the Spurs) who consistently trade less frequently, and others who are much more trade active (e.g., the Mavericks).
 
 <!--
 ![Figure 2. **Number of Trades by Team.** (normalized to a per season rate)](EDA_files/figure-gfm/trades-per-season-teamwise-1.png)
@@ -227,7 +227,7 @@ As can be seen in Tables \@ref(tab:mm-1976-2004) and \@ref(tab:mm-2005-2019), th
 
 While these mixing matrices may appear to support the prohibition against teams trading within their division, there are two caveats for interpreting these patterns which we address in each of our subsequent analytic steps. In order to test for whether teams avoid trading within their division we must first account for each team's tendency to trade at all, before we can assess with whom they conduct those trades. For example, in the 1976-77 trade season, there were 35 trades, of which 7 were within division and 28 across divisions. If we account for how many trades each team made, yet assumed that they made those trades without respect to division of their trade partner, random expectation would be that on average 7.6 trades (sd 2.2) would be within division and 27.4 (sd=2.2) would be across divisions. That is, this observed mixing ratio of 4.0 trades across division for every one within is actually consistent with the random expectations, and thus does not conform to a within division avoidance pattern.
 
-Our second analytic step therefore addresses these conditional distribution assumptions that are not apparent from the mixing matrices alone. To accomplish these properly conditioned versions of the test we use what is known as the $\alpha$-index for computing segregation in networks [@moody2001]. Essentially, what the $\alpha$-index does is allow the estimates of frequency of ties between teams from the same division to be estimated as an odds ratio, which is properly conditioned to account for the number of trade partners one would expect to be within and across division, given the observed base rates of trading by each team, *if* they chose with whom to trade without respect to division [@Bojanowski:2014aa]. Since this is a homophily statistic, testing for nodes within the *same* division, a significantly *negative* $\alpha$-index would be consistent with teams following the proposed prohibition. Figure 4 presents this $\alpha$-index for each trade season individually. What can be seen here is that in none of the observed trade years does the $\alpha$-index differ significantly from random expectation (OR=1). In other words this improved conditional form of the test suggests that there is no observed prohibition against teams trading within division.
+Our second analytic step therefore addresses these conditional distribution assumptions that are not apparent from the mixing matrices alone. To accomplish these properly conditioned versions of the test we use what is known as the $\alpha$-index for computing segregation in networks [@moody2001]. Essentially, what the $\alpha$-index does is allow the estimates of frequency of ties between teams from the same division to be estimated as an odds ratio, which is properly conditioned to account for the number of trade partners one would expect to be within and across division, given the observed base rates of trading by each team, *if* they chose with whom to trade without respect to division [@Bojanowski:2014aa]. Since this is a homophily statistic, testing for nodes within the *same* division, a significantly *negative* $\alpha$-index would be consistent with teams following the proposed prohibition. Figure \@ref(fig:alphas) presents this $\alpha$-index for each trade season individually. What can be seen here is that in none of the observed trade years does the $\alpha$-index differ significantly from random expectation (OR=1). In other words this improved conditional form of the test suggests that there is no observed prohibition against teams trading within division.
 
 <!--
 ![Figure 4. **Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index )](segregation_files/figure-gfm/or2-1.png)
@@ -259,7 +259,7 @@ alpha %>%
 
 Our third analytic step addresses one additional caveat necessary for appropriate interpretation. The $\alpha$-index used above only allows for ties in the network to be dichotomous. That is, within each trade season the test only asks whether each pair of teams trades with one another or not. However in these data it is possible (and observed) that some pairs of teams trade with each other multiple times within the same trade season. So we further need a version of the test that allows for the weighting of the edges in the network, to properly allow for these multiple trades to be incorporated into the estimate. We rely on a recently developed advance in Exponential-family Random Graph Models [ERGM, @strauss-ikeda1990;@lusher-etal2013;@handcock2019], that allow for estimation with weighted networks [@krivit2012;@krivitsky2019]. ERGM is a statistical model for explaining the structure of a network by means of various local tendencies for ties to be present or absent quantified by model terms such as density, degree, homophily, transitivity and so on. The magnitude of effect of each term is measured by an associated coefficient. In the player trade networks we are interested in verifying whether there is any divisional homophily effect, i.e. analogously to the above presented $\alpha$. This would indicated if (multiple) trades are more or less likely in pairs of teams belonging to the same division compared to to pairs in different divisions. A positive value of the coefficient would suggest homophily while negative values would indicate heterophily (the hypothesized avoidance of within-division trading).
 
-Once properly conditioning the test for each of these necessary caveats, we find that in none of the seasons are teams more likely to avoid trading with other teams from within their division. As can be verified in the "funnel plot" presented in Figure 5, each the seasonal homophily coefficients fall within the white cone of statistical *in*significance.
+Once properly conditioning the test for each of these necessary caveats, we find that in none of the seasons are teams more likely to avoid trading with other teams from within their division. As can be verified in the "funnel plot" presented in Figure \@ref(fig:seasonal-ergms), each the seasonal homophily coefficients fall within the white cone of statistical *in*significance.
 
 <!--
 ![Figure 5. **Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)](ergm-results_files/figure-gfm/B-nodematch-funnel-allinone-1.png)
@@ -289,14 +289,15 @@ legend(
 ```
 
 
-To summarize the results from Figure 5 in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume. These results are presented in Table \@ref(tab:model1-table-short).
+To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume. These results are presented in Table \@ref(tab:model1-table-short).
 
 ```{r model1-table-short}
  withr::with_options(
    list(knitr.kable.NA = ""),
    readRDS("model1-table-short.rds") |>
      knitr::kable(
-       caption = "**Valued ERGM fitted to pooled seasonal data**. The table excludes seasonal constants, complete table is presented in the Appendix.",
+       caption = "**Valued ERGM fitted to pooled seasonal data**. The table excludes seasonal constants, complete table is presented in Table \\@ref(tab:model1-table) the Appendix.",
+       
        align = "lrrrr"
      )
  )
@@ -319,7 +320,7 @@ It is worth mentioning that the models we have estimated in the results for Figu
 
 ## ERGM model fit {.appendix}
 
-```{r}
+```{r model1-table}
 withr::with_options(
   list(knitr.kable.NA = ""), {
     knitr::kable(
