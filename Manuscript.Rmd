@@ -68,7 +68,7 @@ Here, we draw on a database of all player transactions in the NBA from the begin
 ![Figure 1. **Number of Trades by Year.** (normalized to a per team rate)](EDA_files/figure-gfm/trades-per-season-seasonwise-1.png)
 -->
 
-```{r trades-per-year, fig.cap="**Number of Trades by Year.** (normalized to a per team rate"}
+```{r trades-per-year, fig.cap="**Number of Trades by Year.** (normalized to a per team rate)"}
 edb %>%
   filter(season_to <= 2019) %>%
   group_by(season) %>%
