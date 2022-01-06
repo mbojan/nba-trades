@@ -1,5 +1,5 @@
 ---
-title: "Do NBA Teams Avoid Trading within Their Own Division?^[We appreciate feedback we received on this paper from Skye Bender-deMoll, Pavel Krivitsky and David Schaefer.]"
+title: "Do NBA Teams Avoid Trading within Their Own Division?"
 author: 
   - first_name: Jimi
     last_name: Adams
