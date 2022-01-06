@@ -1,0 +1,228 @@
+---
+title: "Valued ERGMs"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE, cache=FALSE}
+requireNamespace("metafor")
+library(dplyr)
+library(ergm.count)
+knitr::opts_chunk$set(
+  echo = FALSE
+  )
+```
+
+```{r load-data}
+graphlist <- readRDS(here::here("data", "igraph-list.rds"))
+results <- readRDS("ergm-seasonal.rds")
+
+models <- list(
+  A = net ~ sum + nodefactor("division"),
+  B = net ~ sum + nodefactor("division") + nodematch("division"),
+  C = net ~ sum + nodefactor("division") + nodematch("division", diff=TRUE),
+  D = net ~ sum + nodematch("division")
+) %>% 
+  tibble::enframe("model_name", "model_formula")
+
+d <- tibble::tibble(
+  season = vapply(graphlist, igraph::get.graph.attribute, character(1), "season"),
+  graph = graphlist, # igraphs
+  net = lapply(graphlist, intergraph::asNetwork) # networks
+) %>%
+  tidyr::crossing(models) %>%
+  mutate(
+    model_formula = purrr::map2(net, model_formula, ~ {
+      environment(.y)$net <- .x
+      .y
+    }
+    )
+  )
+
+op <- options(warn = -1)
+
+db <- d %>%
+  transmute(
+    season, 
+    season_start = as.numeric(substr(season, 1, 4)),
+    model_name,
+    results = lapply(results, broom::tidy)
+  ) %>%
+  tidyr::unnest(results) 
+
+options(op)
+
+saveRDS(db, "ergm-seasonal-db.rds")
+```
+
+
+
+
+The models are:
+
+```{r}
+models %>%
+  knitr::kable()
+```
+
+
+
+
+
+# All models
+
+The specifications fit to each season separately. Each cell is `coefficient (standard error) p-value`.
+
+```{r}
+db %>%
+  transmute(
+    season,
+    model_name,
+    term,
+    cell = glue::glue("{round(estimate, 3)} ({round(std.error, 3)}) {format.pval(p.value, 3)}")
+  ) %>%
+  tidyr::pivot_wider(
+    one_of("season", "term"),
+    names_from = "model_name", 
+    values_from = "cell",
+    values_fill = "-"
+  ) %>%
+  knitr::kable()
+```
+
+# Uniform homophily coefficients
+
+I.e. `nodematch` terms from models B and D:
+
+```{r B-D-nodematch}
+db %>%
+  filter(
+    model_name %in% c("B", "D"),
+    term == "nodematch.sum.division"
+  ) %>%
+  knitr::kable()
+
+db %>%
+  filter(model_name == "B", term == "nodematch.sum.division") %>%
+  pull(estimate) %>%
+  hist(main = "Values of nodematch from models B")
+```
+
+## Funnel plots
+
+### Model B
+
+```{r B-nodematch-funnel-1976-2004}
+with(
+  db %>%
+    mutate(
+      season_start = as.numeric(substr(season, 1, 4))
+    ) %>%
+    filter( 
+      model_name == "B", 
+      term == "nodematch.sum.division",
+      season_start < 2004
+    ),
+  metafor::funnel(estimate, vi = std.error^2, main = "1976 - 2004")
+)  
+```
+
+```{r B-nodematch-funnel-2004-2019}
+with(
+  db %>%
+    mutate(
+      season_start = as.numeric(substr(season, 1, 4))
+    ) %>%
+    filter( 
+      model_name == "B", 
+      term == "nodematch.sum.division",
+      season_start >= 2004,
+      season_start < 2019
+    ),
+  metafor::funnel(estimate, vi = std.error^2, main = "2004 - 2019")
+)  
+```
+
+```{r B-nodematch-funnel-allinone}
+with(
+  db %>%
+    mutate(
+      season_start = as.numeric(substr(season, 1, 4))
+    ) %>%
+    filter( 
+      model_name == "B", 
+      term == "nodematch.sum.division",
+      season_start < 2019
+    ),
+  metafor::funnel(estimate, vi = std.error^2, 
+                  col = c("black", "red")[(season_start > 2004) + 1]
+  )
+)
+legend(
+  "topright",
+  pch = 19,
+  col = c("black", "red"),
+  legend = c("1976 - 2004", "2004 - 2019")
+)
+```
+
+
+
+
+
+### Model D
+
+```{r D-nodematch-funnel-1976-2004}
+with(
+  db %>%
+    mutate(
+      season_start = as.numeric(substr(season, 1, 4))
+    ) %>%
+    filter( 
+      model_name == "D", 
+      term == "nodematch.sum.division",
+      season_start < 2004
+    ),
+  metafor::funnel(estimate, vi = std.error^2, main = "1976 - 2004")
+)  
+```
+
+```{r D-nodematch-funnel-2004-2019}
+with(
+  db %>%
+    mutate(
+      season_start = as.numeric(substr(season, 1, 4))
+    ) %>%
+    filter( 
+      model_name == "D", 
+      term == "nodematch.sum.division",
+      season_start >= 2004,
+      season_start < 2019
+    ),
+  metafor::funnel(estimate, vi = std.error^2, main = "2004 - 2019")
+)  
+```
+
+```{r D-nodematch-funnel-allinone}
+with(
+  db %>%
+    mutate(
+      season_start = as.numeric(substr(season, 1, 4))
+    ) %>%
+    filter( 
+      model_name == "D", 
+      term == "nodematch.sum.division",
+      season_start < 2019
+    ),
+  metafor::funnel(estimate, vi = std.error^2, 
+                  col = c("black", "red")[(season_start > 2004) + 1]
+  )
+)
+legend(
+  "topright",
+  pch = 19,
+  col = c("black", "red"),
+  legend = c("1976 - 2004", "2004 - 2019")
+)
+```

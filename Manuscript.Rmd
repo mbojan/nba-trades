@@ -24,6 +24,7 @@ requireNamespace("knitr")
 requireNamespace("igraph")
 requireNamespace("intergraph")
 requireNamespace("withr")
+requireNamespace("metafor")
 library(tibble)
 library(dplyr)
 library(tidyr)
@@ -264,8 +265,28 @@ Once properly conditioning the test for each of these necessary caveats, we find
 ![Figure 5. **Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)](ergm-results_files/figure-gfm/B-nodematch-funnel-allinone-1.png)
 -->
 
-```{r seasonal-ergms, eval=FALSE, fig.cap="**Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)"}
-# TODO: include
+```{r seasonal-ergms, fig.cap="**Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)"}
+with(
+  readRDS("ergm-seasonal-db.rds") %>%
+    mutate(
+      season_start = as.numeric(substr(season, 1, 4))
+    ) %>%
+    filter( 
+      model_name == "B", 
+      term == "nodematch.sum.division",
+      season_start < 2019
+    ),
+  metafor::funnel(estimate, vi = std.error^2, 
+                  col = c("black", "red")[(season_start > 2004) + 1]
+  )
+)
+legend(
+  "topright",
+  pch = 19,
+  col = c("black", "red"),
+  legend = c("1976 - 2004", "2004 - 2019")
+)
+
 ```
 
 
