@@ -76,7 +76,10 @@ publish: Manuscript.html NBA_Trades.html     ## Publish manuscript to '/docs'
 	mkdir -p docs
 	cp $< docs/index.html
 
-.PHONY: paper publish
+just-render:          ## Render the manuscript without processing its prerequisites.
+	Rscript -e 'rmarkdown::render("Manuscript.Rmd")'
+
+.PHONY: paper publish just-render
 
 
 
