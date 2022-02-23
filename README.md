@@ -2,7 +2,7 @@
 
 Data, code and paper (**currently under review**).
 
-- Jimi Adams (@jimiadams)
+- jimi adams (@jimiadams)
 - Michał Bojanowski  (@mbojan)
 
 Abstract:
