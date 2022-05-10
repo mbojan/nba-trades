@@ -9,18 +9,20 @@ Authors@R: c(
   )
 URL: https://mbojan.github.io/nba-trades
 Imports: 
-  dplyr,
-  networkDynamic,
-  ndtv,
-  lubridate,
-  tibble,
-  tidyr,
-  purrr,
   box,
-  withr,
-  knitr,
-  here,
-  igraph,
+  dplyr,
   ergm,
   ergm.count,
-  ggplot2
+  ggplot2,
+  here,
+  igraph,
+  intergraph,
+  knitr,
+  lubridate,
+  metafor,
+  ndtv,
+  networkDynamic,
+  purrr,
+  tibble,
+  tidyr,
+  withr
