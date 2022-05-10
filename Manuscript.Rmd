@@ -1,10 +1,10 @@
 ---
 title: "Do NBA Teams Avoid Trading within Their Own Division?"
 author: 
-  - first_name: Jimi
-    last_name: Adams
+  - first_name: jimi
+    last_name: adams
     orcid_id: "0000-0001-5043-1149"
-    affiliation: University of Colorado, Denver, USA
+    affiliation: University of Colorado Denver, USA
   - first_name: Michał
     last_name: Bojanowski
     orcid_id: "0000-0001-7503-852X"
@@ -15,6 +15,7 @@ output:
   distill::distill_article:
     toc: true
     code_folding: false
+    keep_md: true
 link-citations: true
 repository_url: https://github.com/mbojan/nba-trades
 bibliography: nba_trades.bib
@@ -155,10 +156,10 @@ Analytically, we proceed in three steps, which allow us to address two simultane
 ```{r animation, echo=FALSE}
 htmltools::tags$iframe(src = 'NBA_Trades.html', width = '80%', height = '600px')
 ```
-<p class="caption">Figure 3. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position refers to division.</p>
+<p class="caption">Video 1. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position refers to division.</p>
 </div>
 
-Our first step is to tabulate the number of trades observed both within and across divisions. This tabulation is presented in the form of what is referred to as a mixing matrix, which shows---at the level of divisions---how many trades occur between teams of the same division and between teams of differing divisions. We present these mixing matrices in two aggregations. The first represents all years prior to division expansion, when there were four divisions, a period which spans from 1976-2004. The second window began in 2005 and runs through the end of our analytic period at the end of the 2018-19 season, during which the teams were separated into six divisions. To provide a visual representation of the changes in these division-specific trade patterns across the examined period, Figure 3 presents a dynamic visualization of each year's trade network.^[The appendices also include full replication code for all analyzes conducted and the generation of this visualization.]
+Our first step is to tabulate the number of trades observed both within and across divisions. This tabulation is presented in the form of what is referred to as a mixing matrix, which shows---at the level of divisions---how many trades occur between teams of the same division and between teams of differing divisions. We present these mixing matrices in two aggregations. The first represents all years prior to division expansion, when there were four divisions, a period which spans from 1976-2004. The second window began in 2005 and runs through the end of our analytic period at the end of the 2018-19 season, during which the teams were separated into six divisions. To provide a visual representation of the changes in these division-specific trade patterns across the examined period, Video 1 presents a dynamic visualization of each year's trade network.^[The appendices also include full replication code for all analyzes conducted and the generation of this visualization.]
 
 
 ```{r mm-1976-2004}
@@ -315,7 +316,7 @@ We find an aggregate same-division homophily effect of 0.0099 (standard error of
 
 In short, the empirical patterns do not support the popular claim that NBA teams are likely to avoid trading with teams from within their own division. However, the lack of support for this prohibition is only observed once the strategy for testing the question first accounts for the differential rates at which teams trade and therefore have the opportunity to trade with teams from within/outside their division. The lingering weak associations are even further reduced once including the weighting that is possible from multiple trades between partners in a single season. 
 
-It is worth mentioning that the models we have estimated in the results for Figure 5 are actually no different from what would have been possible through a generalized linear model predicting the (weighted) number of ties observed between pairs of teams. However, the value of introducing the weighted ERGM approach with these data is that if subsequent researchers want to take the next step to provide an explanatory account that further examines which teams are likely to trade with which others, this modeling framework would allow for the simultaneous estimation of predictive factors that variously operate at the node level (e.g., is a team that finished lower in the previous year's standings more likely to trade), the dyad level (e.g., are teams with higher total salaries more likely to trade with other teams who have lower total salaries), or structural features above the dyad (e.g., the tendency to form trade-triples or larger configurations through multi-team deals). The GLM framework would not be able to estimate each of these types of features in such a model without violating model assumptions (e.g., some of these are explicitly modeling the *dependency* between multiple trades). As such, we hope that the illustration if how the weighted ERGM could be beneficial serves as a useful introduction to this modeling framework, which could be extended by future researchers using the data we provide.
+It is worth mentioning that the models we have estimated in the results for Figure \@ref(fig:seasonal-ergms) are actually no different from what would have been possible through a generalized linear model predicting the (weighted) number of ties observed between pairs of teams. However, the value of introducing the weighted ERGM approach with these data is that if subsequent researchers want to take the next step to provide an explanatory account that further examines which teams are likely to trade with which others, this modeling framework would allow for the simultaneous estimation of predictive factors that variously operate at the node level (e.g., is a team that finished lower in the previous year's standings more likely to trade), the dyad level (e.g., are teams with higher total salaries more likely to trade with other teams who have lower total salaries), or structural features above the dyad (e.g., the tendency to form trade-triples or larger configurations through multi-team deals). The GLM framework would not be able to estimate each of these types of features in such a model without violating model assumptions (e.g., some of these are explicitly modeling the *dependency* between multiple trades). As such, we hope that the illustration if how the weighted ERGM could be beneficial serves as a useful introduction to this modeling framework, which could be extended by future researchers using the data we provide.
 
 
 
