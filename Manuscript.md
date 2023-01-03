@@ -21,30 +21,7 @@ repository_url: https://github.com/mbojan/nba-trades
 bibliography: nba_trades.bib
 ---
 
-```{r setup, include=FALSE, cache=FALSE}
-requireNamespace("box")
-requireNamespace("knitr")
-requireNamespace("igraph")
-requireNamespace("intergraph")
-requireNamespace("withr")
-requireNamespace("metafor")
-library(tibble)
-library(dplyr)
-library(tidyr)
-library(purrr)
-library(ggplot2)
 
-# Functions from the 'codebox'
-box::use(
-  sna = codebox/sna[alpha]
-)
-
-knitr::opts_chunk$set(
-  echo = FALSE
-)
-
-theme_set(theme_bw())
-```
 
 
 # Introduction
@@ -62,11 +39,11 @@ In sum, we therefore investigate how strongly division shapes trade partners amo
 
 # Data
 
-```{r load-data}
-vdb <- readRDS(here::here("data", "nodes.rds"))
-edb <- readRDS(here::here("data", "edges.rds"))
-graphlist <- readRDS(here::here("data", "igraph-list.rds"))
-```
+<div class="layout-chunk" data-layout="l-body">
+
+
+</div>
+
 
 Here, we draw on a database of all player transactions in the NBA from the beginning of the 1976 season---when the NBA merged with the ABA uniting major professional basketball in the US under one league---through the completion of the 2018-19 season [@richardson2020]. We compile this list of 1,977 trades into 43 annual trade networks, with the nodes representing teams, and each edge representing a unique trade between those teams. Each trade is assigned to the "trade season" which runs from the end of the previous season through the corresponding season's trade deadline.^[The opening of the trade season begins either (1) with the conclusion of the previous season's playoffs (early in the observed period), or on a specified date each summer (later in the observed window). Using these dates, there were no ambiguous trades that we were unable to attribute to a particular season.] The number of teams within each annual slice changes over time as the league gradually expanded from 22 to 30 teams.^[Unless otherwise specifically noted, all historical accounts in the text were pulled from Wikipedia and confirmed on nba.com.]. The number of trades observed within each slice varies from year to year (range 22-86 or 0.8-2.9 if expressed in per-team averages; see Figure \@ref(fig:trades-per-year)), and teams exhibit differing rates of trading (see Figure \@ref(fig:trades-per-team)). 
 
@@ -74,31 +51,14 @@ Here, we draw on a database of all player transactions in the NBA from the begin
 ![Figure 1. **Number of Trades by Year.** (normalized to a per team rate)](EDA_files/figure-gfm/trades-per-season-seasonwise-1.png)
 -->
 
-```{r trades-per-year, fig.cap="**Number of Trades by Year.** (normalized to a per team rate)"}
-edb %>%
-  filter(season_to <= 2019) %>%
-  group_by(season) %>%
-  summarise(
-    n_trades = sum(weight),
-    .groups = "drop"
-  ) %>%
-  left_join(
-    count(vdb, season, name = "n_teams"),
-    by = "season"
-  ) %>%
-  transmute(
-    season,
-    trades_per_team = n_trades / n_teams
-  ) %>%
-  ggplot(aes(x=season, y = trades_per_team)) +
-  geom_bar(stat = "identity", alpha = 0.5) +
-  geom_hline(aes(yintercept = mean(trades_per_team)), color = "darkred") +
-  xlab("Season") +
-  ylab("Number of trades per team") +
-  theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5)
-  )
-```
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure">
+<img src="Manuscript_files/figure-html5/trades-per-year-1.png" alt="**Number of Trades by Year.** (normalized to a per team rate)"  />
+<p class="caption">(\#fig:trades-per-year)**Number of Trades by Year.** (normalized to a per team rate)</p>
+</div>
+
+</div>
+
 
 Figure \@ref(fig:trades-per-year) presents the trend of number of trades per season. Since, the number of teams varies across the window, we standardize these values to represent the number of trades *per team* in each season. This pattern shows a roughly U-shaped trend, with the highest rates of trades (nearing 2 per team) occurring early and late in the period and the lowest rates occurring in the early 1990s. Notably, this low-point came *after* the introduction of unrestricted free-agency (in 1988), allowing players to sign with any team after their contract expires. As a corollary, Figure \@ref(fig:trades-per-team) presents the frequency distribution of trades per team across the full observed window. There are some teams (e.g., the Spurs) who consistently trade less frequently, and others who are much more trade active (e.g., the Mavericks).
 
@@ -106,45 +66,14 @@ Figure \@ref(fig:trades-per-year) presents the trend of number of trades per sea
 ![Figure 2. **Number of Trades by Team.** (normalized to a per season rate)](EDA_files/figure-gfm/trades-per-season-teamwise-1.png)
 -->
 
-```{r trades-per-team, fig.cap="**Number of Trades by Team.** (normalized to a per season rate)"}
-# Time-aggregated network
-g <- igraph::graph_from_data_frame(
-  edb %>%
-    filter(season_to <= 2019) %>%
-    group_by(from, to) %>%
-    summarise(
-      seasons = list(unique(season)),
-      weight = sum(weight),
-      .groups = "drop"
-    ),
-  directed = FALSE, 
-  vertices = vdb %>%
-    filter(season_to <= 2019) %>%
-    group_by(name) %>%
-    summarise(
-      seasons = list(unique(season)),
-      .groups = "drop"
-    )
-)
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure">
+<img src="Manuscript_files/figure-html5/trades-per-team-1.png" alt="**Number of Trades by Team.** (normalized to a per season rate)"  />
+<p class="caption">(\#fig:trades-per-team)**Number of Trades by Team.** (normalized to a per season rate)</p>
+</div>
 
+</div>
 
-igraph::strength(g) %>%
-  enframe(value = "n_trades") %>%
-  left_join(
-    vdb %>%
-      filter(season_to <= 2019) %>%
-      count(name, name = "n_seasons"),
-    by = "name"
-  ) %>%
-  mutate(
-    trades_per_season = n_trades / n_seasons
-  ) %>%
-  ggplot(aes(y=name, x=trades_per_season)) +
-  geom_vline(aes(xintercept = mean(trades_per_season)), color = "darkred") +
-  geom_col(alpha = 0.5) +
-  xlab("Number of trades per season") +
-  ylab("Team name")
-```
 
 
 To address our research question, we needed to supplement these trade data by compiling a list of each team's division membership. From the 1976-77 season through 2003-04, there were four divisions (Atlantic, Central, Midwest, and Pacific). From the 2004-05 season onward, there were six divisions (Atlantic, Central, Southeast, Northwest, Pacific, and Southwest).^[The divisions are aggregated into conferences, with the Atlantic, Central, and Southeast being in the Eastern Conference, and the Midwest, Pacific, Northwest, and Southwest being in the Western Conference.] While those division/conference names otherwise remained stable, teams changed divisions at various times, whether for geographic reasons or as new expansion teams were added to the league. Accordingly, each team's division is assigned as current to a particular trade season (for example, the Buffalo Braves were in the Atlantic division in 1977-78, but became the San Diego Clippers and moved to the Pacific division for the 1978-79 season). Combined, these data allow us to investigate the tendency for teams to avoid trading with other teams in their own division. 
@@ -157,78 +86,49 @@ Analytically, we proceed in three steps, which allow us to address two simultane
 
 <!-- Manually wrap in distill HTML tags to get a proper caption. -->
 <div class="figure">
-```{r animation, echo=FALSE}
-htmltools::tags$iframe(src = 'NBA_Trades.html', width = '80%', height = '600px')
+<div class="layout-chunk" data-layout="l-body">
+
+```{=html}
+<iframe src="NBA_Trades.html" width="80%" height="600px"></iframe>
 ```
-<p class="caption">Video 1. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position refers to division. The upper-right menu allows the animation speed to be adjusted while visualizing the entire sequence, or the foward/back buttons at the bottom can be used to animate the visualization one annual slice (trade season) at a time.</p>
+
+</div>
+
+<p class="caption">Video 1. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position refers to division.</p>
 </div>
 
 Our first step is to tabulate the number of trades observed both within and across divisions. This tabulation is presented in the form of what is referred to as a mixing matrix, which shows---at the level of divisions---how many trades occur between teams of the same division and between teams of differing divisions. We present these mixing matrices in two aggregations. The first represents all years prior to division expansion, when there were four divisions, a period which spans from 1976-2004. The second window began in 2005 and runs through the end of our analytic period at the end of the 2018-19 season, during which the teams were separated into six divisions. To provide a visual representation of the changes in these division-specific trade patterns across the examined period, Video 1 presents a dynamic visualization of each year's trade network.^[The appendices also include full replication code for all analyzes conducted and the generation of this visualization.]
 
 
-```{r mm-1976-2004}
-mm_1976_2004 <- edb %>%
-  filter(season_to <= 2004) %>%
-  left_join(
-    select(vdb, season, name, div_from = division),
-    by = c("season", "from" = "name")
-  ) %>%
-  left_join(
-    select(vdb, season, name, div_to = division),
-    by = c("season", "to" = "name")
-  ) %>%
-  mutate(
-    x = map2_chr(div_from, div_to, ~ paste(sort(c(.x, .y)), collapse="-"))
-  ) %>%
-  group_by(x) %>%
-  summarise(
-    n = sum(weight),
-    .groups = "drop"
-  ) %>%
-  separate(x, into=c("div_from", "div_to")) %>%
-  pivot_wider(names_from = div_to, values_from = n)
+<div class="layout-chunk" data-layout="l-body">
 
-withr::with_options(
-  list(knitr.kable.NA = ""),
-  mm_1976_2004 %>%
-    rename(`**1976 - 2004**` = div_from) %>%
-    knitr::kable(
-      caption = "**Mixing Matrix for the period 1976 - 2004**"
-    )
-)
-```
+Table: (\#tab:mm-1976-2004)**Mixing Matrix for the period 1976 - 2004**
 
-```{r mm-2005-2019}
-mm_2005_2019 <- edb %>%
-  filter(season_to >= 2005, season_to <= 2019) %>%
-  left_join(
-    select(vdb, season, name, div_from = division),
-    by = c("season", "from" = "name")
-  ) %>%
-  left_join(
-    select(vdb, season, name, div_to = division),
-    by = c("season", "to" = "name")
-  ) %>%
-  mutate(
-    x = map2_chr(div_from, div_to, ~ paste(sort(c(.x, .y)), collapse="-"))
-  ) %>%
-  group_by(x) %>%
-  summarise(
-    n = sum(weight),
-    .groups = "drop"
-  ) %>%
-  separate(x, into=c("div_from", "div_to")) %>%
-  pivot_wider(names_from = div_to, values_from = n)
+|**1976 - 2004** | Atlantic| Central| Midwest| Pacific|
+|:---------------|--------:|-------:|-------:|-------:|
+|Atlantic        |       49|     135|     140|     124|
+|Central         |         |      62|     156|     175|
+|Midwest         |         |        |      69|     114|
+|Pacific         |         |        |        |      53|
 
-withr::with_options(
-  list(knitr.kable.NA = ""),
-  mm_2005_2019 %>%
-    rename(`**2005 - 2019**` = div_from) %>%
-    knitr::kable(
-      caption = "**Mixing Matrix for the period 2005 - 2019**"
-    )
-)
-```
+</div>
+
+
+<div class="layout-chunk" data-layout="l-body">
+
+Table: (\#tab:mm-2005-2019)**Mixing Matrix for the period 2005 - 2019**
+
+|**2005 - 2019** | Atlantic| Central| Northwest| Pacific| Southeast| Southwest|
+|:---------------|--------:|-------:|---------:|-------:|---------:|---------:|
+|Atlantic        |       23|      51|        62|      56|        42|        71|
+|Central         |         |      18|        52|      42|        45|        41|
+|Northwest       |         |        |        33|      41|        45|        55|
+|Pacific         |         |        |          |       9|        52|        54|
+|Southeast       |         |        |          |        |        16|        61|
+|Southwest       |         |        |          |        |          |        31|
+
+</div>
+
 
 As can be seen in Tables \@ref(tab:mm-1976-2004) and \@ref(tab:mm-2005-2019), these tabulations would appear to suggest that there is an avoidance of trading with members of one's own division. For example in the pre-expansion era only 22% (231/1062) of trades were within division, a ratio of nearly 3.6 trades across divisions for every one trade within division. 
 
@@ -240,28 +140,14 @@ Our second analytic step therefore addresses these conditional distribution assu
 ![Figure 4. **Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index )](segregation_files/figure-gfm/or2-1.png)
 -->
 
-```{r alphas, fig.cap="**Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\\alpha$-index)."}
-netlist <- lapply(graphlist, intergraph::asNetwork)
-names(netlist) <- vapply(graphlist, igraph::get.graph.attribute, character(1), "season")
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure">
+<img src="Manuscript_files/figure-html5/alphas-1.png" alt="**Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index)."  />
+<p class="caption">(\#fig:alphas)**Divisional Homophily in NBA Trades by Season.** (as computed by Moody's $\alpha$-index).</p>
+</div>
 
-alpha <- lapply(netlist, alpha, "division") %>%
-  bind_rows(.id = "season") %>%
-  mutate(
-    season_start = as.numeric(substr(season, 1, 4))
-  ) %>%
-  filter(season_start < 2019)
+</div>
 
-alpha %>%
-  ggplot(aes(x = season, y = or, ymin=ci.low, ymax=ci.high)) +
-  geom_hline(yintercept = 1, size = 0.5, color = "red") +
-  geom_pointrange() +
-  scale_y_continuous(trans = "log", breaks=c(1/8, 1/4, 1/2, 1, 2, 4)) +
-  xlab("Season") +
-  ylab("Within Division Trades (OR)") +
-  theme(
-    axis.text.x = element_text(angle = 90, vjust = 0.5)
-  )
-```
 
 
 Our third analytic step addresses one additional caveat necessary for appropriate interpretation. The $\alpha$-index used above only allows for ties in the network to be dichotomous. That is, within each trade season the test only asks whether each pair of teams trades with one another or not. However in these data it is possible (and observed) that some pairs of teams trade with each other multiple times within the same trade season. So we further need a version of the test that allows for the weighting of the edges in the network, to properly allow for these multiple trades to be incorporated into the estimate. We rely on a recently developed advance in Exponential-family Random Graph Models [ERGM, @strauss-ikeda1990;@lusher-etal2013;@handcock2019], that allow for estimation with weighted networks [@krivit2012;@krivitsky2019]. ERGM is a statistical model for explaining the structure of a network by means of various local tendencies for ties to be present or absent quantified by model terms such as density, degree, homophily, transitivity and so on. The magnitude of effect of each term is measured by an associated coefficient. In the player trade networks we are interested in verifying whether there is any divisional homophily effect, i.e. analogously to the above presented $\alpha$. This would indicated if (multiple) trades are more or less likely in pairs of teams belonging to the same division compared to to pairs in different divisions. A positive value of the coefficient would suggest homophily while negative values would indicate heterophily (the hypothesized avoidance of within-division trading).
@@ -272,43 +158,28 @@ Once properly conditioning the test for each of these necessary caveats, we find
 ![Figure 5. **Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)](ergm-results_files/figure-gfm/B-nodematch-funnel-allinone-1.png)
 -->
 
-```{r seasonal-ergms, fig.cap="**Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)"}
-with(
-  readRDS("ergm-seasonal-db.rds") %>%
-    mutate(
-      season_start = as.numeric(substr(season, 1, 4))
-    ) %>%
-    filter( 
-      model_name == "B", 
-      term == "nodematch.sum.division",
-      season_start < 2019
-    ),
-  metafor::funnel(estimate, vi = std.error^2, 
-                  col = c("black", "red")[(season_start > 2004) + 1]
-  )
-)
-legend(
-  "topright",
-  pch = 19,
-  col = c("black", "red"),
-  legend = c("1976 - 2004", "2005 - 2019")
-)
-```
+<div class="layout-chunk" data-layout="l-body">
+<div class="figure">
+<img src="Manuscript_files/figure-html5/seasonal-ergms-1.png" alt="**Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)"  />
+<p class="caption">(\#fig:seasonal-ergms)**Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)</p>
+</div>
+
+</div>
+
 
 
 To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume. These results are presented in Table \@ref(tab:model1-table-short).
 
-```{r model1-table-short}
- withr::with_options(
-   list(knitr.kable.NA = ""),
-   readRDS("model1-table-short.rds") |>
-     knitr::kable(
-       caption = "**Valued ERGM fitted to pooled seasonal data**. The table excludes seasonal constants, complete table is presented in Table \\@ref(tab:model1-table) the Appendix.",
-       
-       align = "lrrrr"
-     )
- )
-```
+<div class="layout-chunk" data-layout="l-body">
+
+Table: (\#tab:model1-table-short)**Valued ERGM fitted to pooled seasonal data**. The table excludes seasonal constants, complete table is presented in Table \@ref(tab:model1-table) the Appendix.
+
+|Effect      |  Estimate|        SE|         95% CI| p-value|
+|:-----------|---------:|---------:|--------------:|-------:|
+|*Homophily* | 0.0099434| 0.0587577| (-0.11;  0.13)|   0.866|
+
+</div>
+
 
 We find an aggregate same-division homophily effect of 0.0099 (standard error of 0.059, z-statistic of 0.169), again showing no avoidance pattern. Fitting similar models to the periods 1976-2004 and 2004-2019 separately leads to almost identical results.[^periodModels]
 
@@ -327,17 +198,64 @@ It is worth mentioning that the models we have estimated in the results for Figu
 
 ## ERGM model fit {.appendix}
 
-```{r model1-table}
-withr::with_options(
-  list(knitr.kable.NA = ""), {
-    knitr::kable(
-      readRDS(file = "model1-table.rds"), 
-      caption = "Full results for the ERG model fit to pooled data.",
-      align = "lrrrr")
-  })
-```
+<div class="layout-chunk" data-layout="l-body">
+
+Table: (\#tab:model1-table)Full results for the ERG model fit to pooled data.
+
+|Effect                |   Estimate|        SE|         95% CI| p-value|
+|:---------------------|----------:|---------:|--------------:|-------:|
+|*Seasonal base rates* |           |          |               |        |
+|1976-1977             | -0.9026534| 0.0792530| (-1.06; -0.75)|   0.000|
+|1977-1978             | -0.8427925| 0.0724760| (-0.98; -0.70)|   0.000|
+|1978-1979             | -0.9263500| 0.0796106| (-1.08; -0.77)|   0.000|
+|1979-1980             | -0.8762352| 0.0771426| (-1.03; -0.73)|   0.000|
+|1980-1981             | -0.9910653| 0.0854415| (-1.16; -0.82)|   0.000|
+|1981-1982             | -0.9050884| 0.0754043| (-1.05; -0.76)|   0.000|
+|1982-1983             | -0.8069531| 0.0682278| (-0.94; -0.67)|   0.000|
+|1983-1984             | -0.9092292| 0.0766022| (-1.06; -0.76)|   0.000|
+|1984-1985             | -1.0526877| 0.0872369| (-1.22; -0.88)|   0.000|
+|1985-1986             | -1.0782139| 0.0930195| (-1.26; -0.90)|   0.000|
+|1986-1987             | -0.9198185| 0.0757693| (-1.07; -0.77)|   0.000|
+|1987-1988             | -0.9403157| 0.0781448| (-1.09; -0.79)|   0.000|
+|1988-1989             | -1.1192392| 0.0854069| (-1.29; -0.95)|   0.000|
+|1989-1990             | -1.1674130| 0.0852806| (-1.33; -1.00)|   0.000|
+|1990-1991             | -1.1015000| 0.0789942| (-1.26; -0.95)|   0.000|
+|1991-1992             | -1.3314738| 0.1014767| (-1.53; -1.13)|   0.000|
+|1992-1993             | -1.2131200| 0.0885597| (-1.39; -1.04)|   0.000|
+|1993-1994             | -1.2949074| 0.0953019| (-1.48; -1.11)|   0.000|
+|1994-1995             | -1.3952511| 0.1080338| (-1.61; -1.18)|   0.000|
+|1995-1996             | -1.2254082| 0.0852894| (-1.39; -1.06)|   0.000|
+|1996-1997             | -1.2243585| 0.0837553| (-1.39; -1.06)|   0.000|
+|1997-1998             | -1.1148373| 0.0727527| (-1.26; -0.97)|   0.000|
+|1998-1999             | -1.2492779| 0.0861211| (-1.42; -1.08)|   0.000|
+|1999-2000             | -1.2789135| 0.0904522| (-1.46; -1.10)|   0.000|
+|2000-2001             | -1.0430409| 0.0700097| (-1.18; -0.91)|   0.000|
+|2001-2002             | -1.0608807| 0.0696335| (-1.20; -0.92)|   0.000|
+|2002-2003             | -1.2653868| 0.0888219| (-1.44; -1.09)|   0.000|
+|2003-2004             | -1.0915922| 0.0733866| (-1.24; -0.95)|   0.000|
+|2004-2005             | -1.0507651| 0.0685301| (-1.19; -0.92)|   0.000|
+|2005-2006             | -1.0769347| 0.0703190| (-1.21; -0.94)|   0.000|
+|2006-2007             | -1.1925306| 0.0774736| (-1.34; -1.04)|   0.000|
+|2007-2008             | -1.1603188| 0.0759557| (-1.31; -1.01)|   0.000|
+|2008-2009             | -0.9697841| 0.0623303| (-1.09; -0.85)|   0.000|
+|2009-2010             | -0.9605862| 0.0613118| (-1.08; -0.84)|   0.000|
+|2010-2011             | -0.9335487| 0.0588953| (-1.05; -0.82)|   0.000|
+|2011-2012             | -1.1465080| 0.0721213| (-1.29; -1.01)|   0.000|
+|2012-2013             | -0.9791587| 0.0622563| (-1.10; -0.86)|   0.000|
+|2013-2014             | -0.9789426| 0.0643977| (-1.11; -0.85)|   0.000|
+|2014-2015             | -0.8316791| 0.0542273| (-0.94; -0.73)|   0.000|
+|2015-2016             | -1.0257114| 0.0647017| (-1.15; -0.90)|   0.000|
+|2016-2017             | -1.0875715| 0.0680398| (-1.22; -0.95)|   0.000|
+|2017-2018             | -1.0105469| 0.0640282| (-1.14; -0.89)|   0.000|
+|2018-2019             | -0.9172200| 0.0586872| (-1.03; -0.80)|   0.000|
+|*Homophily*           |  0.0099434| 0.0587577| (-0.11;  0.13)|   0.866|
+
+</div>
+
 
 
 ## Acknowledgements {.appendix}
 
 We appreciate feedback we received on this paper from Skye Bender-deMoll, Pavel Krivitsky and David Schaefer.
+```{.r .distill-force-highlighting-css}
+```
