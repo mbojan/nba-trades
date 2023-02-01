@@ -89,10 +89,7 @@ Analytically, we proceed in three steps, which allow us to address two simultane
 <!-- Manually wrap in distill HTML tags to get a proper caption. -->
 <div class="figure">
 <div class="layout-chunk" data-layout="l-body">
-
-```{=html}
-<iframe src="NBA_Trades.html" width="80%" height="600px"></iframe>
-```
+`<iframe src="NBA_Trades.html" width="80%" height="600px"></iframe>`{=html}
 
 </div>
 
@@ -154,7 +151,7 @@ Our second analytic step therefore addresses these conditional distribution assu
 
 Our third analytic step addresses one additional caveat necessary for appropriate interpretation. The $\alpha$-index used above only allows for ties in the network to be dichotomous. That is, within each trade season the test only asks whether each pair of teams trades with one another or not. However in these data it is possible (and observed) that some pairs of teams trade with each other multiple times within the same trade season. So we further need a version of the test that allows for the weighting of the edges in the network, to properly allow for these multiple trades to be incorporated into the estimate. We rely on a recently developed advance in Exponential-family Random Graph Models [ERGM, @strauss-ikeda1990;@lusher-etal2013;@handcock2019], that allow for estimation with weighted networks [@krivit2012;@krivitsky2019]. ERGM is a statistical model for explaining the structure of a network by means of various local tendencies for ties to be present or absent quantified by model terms such as density, degree, homophily, transitivity and so on. The magnitude of effect of each term is measured by an associated coefficient. In the player trade networks we are interested in verifying whether there is any divisional homophily effect, i.e. analogously to the above presented $\alpha$. This would indicated if (multiple) trades are more or less likely in pairs of teams belonging to the same division compared to to pairs in different divisions. A positive value of the coefficient would suggest homophily while negative values would indicate heterophily (the hypothesized avoidance of within-division trading).
 
-Adequate modeling a weighted network via an ERGM requires adapting model specification to the distribution of trade counts across dyads by choosing the reference measure [@krivit2012, sec. 5.2]. While the typical approach involves assuming that the counts are Poisson-distributed, in practice the data is distributed differently with overprevalence of 0s (zero-inflation) or with greater variation than the Poisson distribution assumes (overdispersion). Table \@ref(tab:dyadic-trade-counts) summarises that trading is relatively rare in general and it happens even more rearely that a pair of teams trades more than once in the same season.
+Adequate modeling a weighted network via an ERGM requires adapting model specification to the distribution of trade counts across dyads by choosing the reference measure [@krivit2012, sec. 5.2]. While the typical approach involves assuming that the counts are Poisson-distributed, in practice the data is distributed differently with overprevalence of 0s (zero-inflation) or with greater variation than the Poisson distribution assumes (overdispersion). Table \@ref(tab:dyadic-trade-counts) summarises that trading is relatively rare in general and it happens even more rearely that a pair of teams trades more than once in the same season. Formal tests diagnoze overdispersion in this distribution [@cameron1990regression;@rpkg-AER].
 
 <div class="layout-chunk" data-layout="l-body">
 
@@ -171,9 +168,7 @@ Table: (\#tab:dyadic-trade-counts)**Distribution of dyadic trade counts**. Frequ
 </div>
 
 
-At this point one could either choose a non-Poissonian reference measure or simplify data by dychotomizing the counts (any number of trades vs no trades at all) and proceeding with a binary ERGM. The homophily coeficient binary ERGM controlling for season- and division-specific trading rates is equal to 
-
-
+At this point one could either choose a non-Poissonian reference measure or simplify data by dychotomizing the counts (any number of trades vs no trades at all) and proceeding with a binary ERGM. The homophily coefficient in the binary ERGM fit to all seasonal trade networks simultaneously, including season- and division-specific effects, is equal to 0.0122759 (standard error of 0.065, z-statistic of 0.188) showing no avoidance patterns. The complete model is presented in Table \@ref(tab:model-binary-table) in the Appendix.   
 
 Once properly conditioning the test for each of these necessary caveats, we find that in none of the seasons are teams more likely to avoid trading with other teams from within their division. As can be verified in the "funnel plot" presented in Figure \@ref(fig:seasonal-ergms), each the seasonal homophily coefficients fall within the white cone of statistical *in*significance.
 
@@ -191,7 +186,7 @@ Once properly conditioning the test for each of these necessary caveats, we find
 
 
 
-To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume. These results are presented in Table \@ref(tab:model1-table-short).
+To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume, similarly to the binary ERGM mentioned above. These results are presented in Table \@ref(tab:model1-table-short).
 
 <div class="layout-chunk" data-layout="l-body">
 
@@ -204,7 +199,7 @@ Table: (\#tab:model1-table-short)**Valued ERGM fitted to pooled seasonal data**.
 </div>
 
 
-We find an aggregate same-division homophily effect of 0.0099 (standard error of 0.059, z-statistic of 0.169), again showing no avoidance pattern. Fitting similar models to the periods 1976-2004 and 2004-2019 separately leads to almost identical results.[^periodModels]
+We find an aggregate same-division homophily effect of 0.0060264 (standard error of 0.059, z-statistic of 0.102), again showing no avoidance pattern. Fitting similar models to the periods 1976-2004 and 2004-2019 separately leads to almost identical results.[^periodModels]
 
 [^periodModels]: Results can be obtained from the authors upon request.
 
@@ -224,7 +219,7 @@ Table: (\#tab:model-binary-table)Full results for the binary ERG model fit to po
 
 |Effect                |   Estimate|        SE|         95% CI| p-value|
 |:---------------------|----------:|---------:|--------------:|-------:|
-|*Seasonal base rates* |         NA|        NA|             NA|      NA|
+|*Seasonal base rates* |           |          |               |        |
 |1977-1978             |  0.0644406| 0.1270305| (-0.18;  0.31)|   0.612|
 |1978-1979             |  0.0019118| 0.1298141| (-0.25;  0.26)|   0.988|
 |1979-1980             |  0.0019118| 0.1298141| (-0.25;  0.26)|   0.988|
@@ -284,55 +279,55 @@ Table: (\#tab:model-binary-table)Full results for the binary ERG model fit to po
 
 <div class="layout-chunk" data-layout="l-body">
 
-Table: (\#tab:model1-table)Full results for the ERG model fit to pooled data.
+Table: (\#tab:model1-table)Full results for the weighted ERG model (Conway-Maxwell-Poisson reference) fit to pooled data.
 
-|Effect                |   Estimate|        SE|         95% CI| p-value|
-|:---------------------|----------:|---------:|--------------:|-------:|
-|*Seasonal base rates* |           |          |               |        |
-|1976-1977             | -0.9026534| 0.0792530| (-1.06; -0.75)|   0.000|
-|1977-1978             | -0.8427925| 0.0724760| (-0.98; -0.70)|   0.000|
-|1978-1979             | -0.9263500| 0.0796106| (-1.08; -0.77)|   0.000|
-|1979-1980             | -0.8762352| 0.0771426| (-1.03; -0.73)|   0.000|
-|1980-1981             | -0.9910653| 0.0854415| (-1.16; -0.82)|   0.000|
-|1981-1982             | -0.9050884| 0.0754043| (-1.05; -0.76)|   0.000|
-|1982-1983             | -0.8069531| 0.0682278| (-0.94; -0.67)|   0.000|
-|1983-1984             | -0.9092292| 0.0766022| (-1.06; -0.76)|   0.000|
-|1984-1985             | -1.0526877| 0.0872369| (-1.22; -0.88)|   0.000|
-|1985-1986             | -1.0782139| 0.0930195| (-1.26; -0.90)|   0.000|
-|1986-1987             | -0.9198185| 0.0757693| (-1.07; -0.77)|   0.000|
-|1987-1988             | -0.9403157| 0.0781448| (-1.09; -0.79)|   0.000|
-|1988-1989             | -1.1192392| 0.0854069| (-1.29; -0.95)|   0.000|
-|1989-1990             | -1.1674130| 0.0852806| (-1.33; -1.00)|   0.000|
-|1990-1991             | -1.1015000| 0.0789942| (-1.26; -0.95)|   0.000|
-|1991-1992             | -1.3314738| 0.1014767| (-1.53; -1.13)|   0.000|
-|1992-1993             | -1.2131200| 0.0885597| (-1.39; -1.04)|   0.000|
-|1993-1994             | -1.2949074| 0.0953019| (-1.48; -1.11)|   0.000|
-|1994-1995             | -1.3952511| 0.1080338| (-1.61; -1.18)|   0.000|
-|1995-1996             | -1.2254082| 0.0852894| (-1.39; -1.06)|   0.000|
-|1996-1997             | -1.2243585| 0.0837553| (-1.39; -1.06)|   0.000|
-|1997-1998             | -1.1148373| 0.0727527| (-1.26; -0.97)|   0.000|
-|1998-1999             | -1.2492779| 0.0861211| (-1.42; -1.08)|   0.000|
-|1999-2000             | -1.2789135| 0.0904522| (-1.46; -1.10)|   0.000|
-|2000-2001             | -1.0430409| 0.0700097| (-1.18; -0.91)|   0.000|
-|2001-2002             | -1.0608807| 0.0696335| (-1.20; -0.92)|   0.000|
-|2002-2003             | -1.2653868| 0.0888219| (-1.44; -1.09)|   0.000|
-|2003-2004             | -1.0915922| 0.0733866| (-1.24; -0.95)|   0.000|
-|2004-2005             | -1.0507651| 0.0685301| (-1.19; -0.92)|   0.000|
-|2005-2006             | -1.0769347| 0.0703190| (-1.21; -0.94)|   0.000|
-|2006-2007             | -1.1925306| 0.0774736| (-1.34; -1.04)|   0.000|
-|2007-2008             | -1.1603188| 0.0759557| (-1.31; -1.01)|   0.000|
-|2008-2009             | -0.9697841| 0.0623303| (-1.09; -0.85)|   0.000|
-|2009-2010             | -0.9605862| 0.0613118| (-1.08; -0.84)|   0.000|
-|2010-2011             | -0.9335487| 0.0588953| (-1.05; -0.82)|   0.000|
-|2011-2012             | -1.1465080| 0.0721213| (-1.29; -1.01)|   0.000|
-|2012-2013             | -0.9791587| 0.0622563| (-1.10; -0.86)|   0.000|
-|2013-2014             | -0.9789426| 0.0643977| (-1.11; -0.85)|   0.000|
-|2014-2015             | -0.8316791| 0.0542273| (-0.94; -0.73)|   0.000|
-|2015-2016             | -1.0257114| 0.0647017| (-1.15; -0.90)|   0.000|
-|2016-2017             | -1.0875715| 0.0680398| (-1.22; -0.95)|   0.000|
-|2017-2018             | -1.0105469| 0.0640282| (-1.14; -0.89)|   0.000|
-|2018-2019             | -0.9172200| 0.0586872| (-1.03; -0.80)|   0.000|
-|*Homophily*           |  0.0099434| 0.0587577| (-0.11;  0.13)|   0.866|
+|Effect      |   Estimate|        SE|         95% CI| p-value|
+|:-----------|----------:|---------:|--------------:|-------:|
+|CMP         |  0.2315843| 0.1220351| (-0.01;  0.47)|   0.058|
+|1976-1977   | -0.8907633| 0.0786659| (-1.04; -0.74)|   0.000|
+|1977-1978   | -0.8353665| 0.0749602| (-0.98; -0.69)|   0.000|
+|1978-1979   | -0.9163628| 0.0789622| (-1.07; -0.76)|   0.000|
+|1979-1980   | -0.8718532| 0.0760023| (-1.02; -0.72)|   0.000|
+|1980-1981   | -0.9878413| 0.0849915| (-1.15; -0.82)|   0.000|
+|1981-1982   | -0.9009026| 0.0765184| (-1.05; -0.75)|   0.000|
+|1982-1983   | -0.8000072| 0.0693241| (-0.94; -0.66)|   0.000|
+|1983-1984   | -0.8995605| 0.0754444| (-1.05; -0.75)|   0.000|
+|1984-1985   | -1.0483261| 0.0885418| (-1.22; -0.87)|   0.000|
+|1985-1986   | -1.0775154| 0.0913748| (-1.26; -0.90)|   0.000|
+|1986-1987   | -0.9136535| 0.0767336| (-1.06; -0.76)|   0.000|
+|1987-1988   | -0.9374337| 0.0817052| (-1.10; -0.78)|   0.000|
+|1988-1989   | -1.1151354| 0.0874540| (-1.29; -0.94)|   0.000|
+|1989-1990   | -1.1628729| 0.0838135| (-1.33; -1.00)|   0.000|
+|1990-1991   | -1.0983683| 0.0794202| (-1.25; -0.94)|   0.000|
+|1991-1992   | -1.3211755| 0.1036898| (-1.52; -1.12)|   0.000|
+|1992-1993   | -1.2070537| 0.0889138| (-1.38; -1.03)|   0.000|
+|1993-1994   | -1.2877179| 0.0980046| (-1.48; -1.10)|   0.000|
+|1994-1995   | -1.3925032| 0.1059200| (-1.60; -1.18)|   0.000|
+|1995-1996   | -1.2225016| 0.0836029| (-1.39; -1.06)|   0.000|
+|1996-1997   | -1.2200099| 0.0809371| (-1.38; -1.06)|   0.000|
+|1997-1998   | -1.1115641| 0.0737605| (-1.26; -0.97)|   0.000|
+|1998-1999   | -1.2500706| 0.0872142| (-1.42; -1.08)|   0.000|
+|1999-2000   | -1.2751475| 0.0904112| (-1.45; -1.10)|   0.000|
+|2000-2001   | -1.0384705| 0.0712261| (-1.18; -0.90)|   0.000|
+|2001-2002   | -1.0588213| 0.0719334| (-1.20; -0.92)|   0.000|
+|2002-2003   | -1.2626974| 0.0885910| (-1.44; -1.09)|   0.000|
+|2003-2004   | -1.0883370| 0.0733621| (-1.23; -0.94)|   0.000|
+|2004-2005   | -1.0469835| 0.0672062| (-1.18; -0.92)|   0.000|
+|2005-2006   | -1.0728968| 0.0674913| (-1.21; -0.94)|   0.000|
+|2006-2007   | -1.1929729| 0.0767037| (-1.34; -1.04)|   0.000|
+|2007-2008   | -1.1562207| 0.0768719| (-1.31; -1.01)|   0.000|
+|2008-2009   | -0.9610409| 0.0627955| (-1.08; -0.84)|   0.000|
+|2009-2010   | -0.9560768| 0.0615669| (-1.08; -0.84)|   0.000|
+|2010-2011   | -0.9258245| 0.0602325| (-1.04; -0.81)|   0.000|
+|2011-2012   | -1.1419441| 0.0751035| (-1.29; -0.99)|   0.000|
+|2012-2013   | -0.9717012| 0.0636100| (-1.10; -0.85)|   0.000|
+|2013-2014   | -0.9714144| 0.0642021| (-1.10; -0.85)|   0.000|
+|2014-2015   | -0.8298264| 0.0536774| (-0.94; -0.72)|   0.000|
+|2015-2016   | -1.0182917| 0.0669348| (-1.15; -0.89)|   0.000|
+|2016-2017   | -1.0777438| 0.0717646| (-1.22; -0.94)|   0.000|
+|2017-2018   | -0.9999934| 0.0660829| (-1.13; -0.87)|   0.000|
+|2018-2019   | -0.9120202| 0.0579577| (-1.03; -0.80)|   0.000|
+|*Homophily* |  0.0060264| 0.0593487| (-0.11;  0.12)|   0.919|
 
 </div>
 
