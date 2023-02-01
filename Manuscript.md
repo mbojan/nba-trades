@@ -19,6 +19,8 @@ output:
 link-citations: true
 repository_url: https://github.com/mbojan/nba-trades
 bibliography: nba_trades.bib
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -94,7 +96,7 @@ Analytically, we proceed in three steps, which allow us to address two simultane
 
 </div>
 
-<p class="caption">Video 1. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position refers to division.</p>
+<p class="caption">Video 1. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position refers to division. The upper-right menu allows the animation speed to be adjusted while visualizing the entire sequence, or the foward/back buttons at the bottom can be used to animate the visualization one annual slice (trade season) at a time.</p>
 </div>
 
 Our first step is to tabulate the number of trades observed both within and across divisions. This tabulation is presented in the form of what is referred to as a mixing matrix, which shows---at the level of divisions---how many trades occur between teams of the same division and between teams of differing divisions. We present these mixing matrices in two aggregations. The first represents all years prior to division expansion, when there were four divisions, a period which spans from 1976-2004. The second window began in 2005 and runs through the end of our analytic period at the end of the 2018-19 season, during which the teams were separated into six divisions. To provide a visual representation of the changes in these division-specific trade patterns across the examined period, Video 1 presents a dynamic visualization of each year's trade network.^[The appendices also include full replication code for all analyzes conducted and the generation of this visualization.]
@@ -152,6 +154,27 @@ Our second analytic step therefore addresses these conditional distribution assu
 
 Our third analytic step addresses one additional caveat necessary for appropriate interpretation. The $\alpha$-index used above only allows for ties in the network to be dichotomous. That is, within each trade season the test only asks whether each pair of teams trades with one another or not. However in these data it is possible (and observed) that some pairs of teams trade with each other multiple times within the same trade season. So we further need a version of the test that allows for the weighting of the edges in the network, to properly allow for these multiple trades to be incorporated into the estimate. We rely on a recently developed advance in Exponential-family Random Graph Models [ERGM, @strauss-ikeda1990;@lusher-etal2013;@handcock2019], that allow for estimation with weighted networks [@krivit2012;@krivitsky2019]. ERGM is a statistical model for explaining the structure of a network by means of various local tendencies for ties to be present or absent quantified by model terms such as density, degree, homophily, transitivity and so on. The magnitude of effect of each term is measured by an associated coefficient. In the player trade networks we are interested in verifying whether there is any divisional homophily effect, i.e. analogously to the above presented $\alpha$. This would indicated if (multiple) trades are more or less likely in pairs of teams belonging to the same division compared to to pairs in different divisions. A positive value of the coefficient would suggest homophily while negative values would indicate heterophily (the hypothesized avoidance of within-division trading).
 
+Adequate modeling a weighted network via an ERGM requires adapting model specification to the distribution of trade counts across dyads by choosing the reference measure [@krivit2012, sec. 5.2]. While the typical approach involves assuming that the counts are Poisson-distributed, in practice the data is distributed differently with overprevalence of 0s (zero-inflation) or with greater variation than the Poisson distribution assumes (overdispersion). Table \@ref(tab:dyadic-trade-counts) summarises that trading is relatively rare in general and it happens even more rearely that a pair of teams trades more than once in the same season.
+
+<div class="layout-chunk" data-layout="l-body">
+
+Table: (\#tab:dyadic-trade-counts)**Distribution of dyadic trade counts**. Frequency of number of trades in a season in pairs of teams.
+
+| Number of trades|     N|    %|
+|----------------:|-----:|----:|
+|                0| 13720| 88.3|
+|                1|  1683| 10.8|
+|                2|   118|  0.8|
+|                3|    11|  0.1|
+|                4|     1|  0.0|
+
+</div>
+
+
+At this point one could either choose a non-Poissonian reference measure or simplify data by dychotomizing the counts (any number of trades vs no trades at all) and proceeding with a binary ERGM. To make our conclusions more robust and for illustrative purposes with provide both types of results.
+
+
+
 Once properly conditioning the test for each of these necessary caveats, we find that in none of the seasons are teams more likely to avoid trading with other teams from within their division. As can be verified in the "funnel plot" presented in Figure \@ref(fig:seasonal-ergms), each the seasonal homophily coefficients fall within the white cone of statistical *in*significance.
 
 <!--
@@ -193,10 +216,71 @@ In short, the empirical patterns do not support the popular claim that NBA teams
 
 It is worth mentioning that the models we have estimated in the results for Figure \@ref(fig:seasonal-ergms) are actually no different from what would have been possible through a generalized linear model predicting the (weighted) number of ties observed between pairs of teams. However, the value of introducing the weighted ERGM approach with these data is that if subsequent researchers want to take the next step to provide an explanatory account that further examines which teams are likely to trade with which others, this modeling framework would allow for the simultaneous estimation of predictive factors that variously operate at the node level (e.g., is a team that finished lower in the previous year's standings more likely to trade), the dyad level (e.g., are teams with higher total salaries more likely to trade with other teams who have lower total salaries), or structural features above the dyad (e.g., the tendency to form trade-triples or larger configurations through multi-team deals). The GLM framework would not be able to estimate each of these types of features in such a model without violating model assumptions (e.g., some of these are explicitly modeling the *dependency* between multiple trades). As such, we hope that the illustration if how the weighted ERGM could be beneficial serves as a useful introduction to this modeling framework, which could be extended by future researchers using the data we provide.
 
+## Binary ERGM model fit {.appendix}
+
+<div class="layout-chunk" data-layout="l-body">
+
+Table: (\#tab:model-binary-table)Full results for the binary ERG model fit to pooled data.
+
+|Effect                |   Estimate|        SE|         95% CI| p-value|
+|:---------------------|----------:|---------:|--------------:|-------:|
+|*Seasonal base rates* |         NA|        NA|             NA|      NA|
+|1977-1978             |  0.0644406| 0.1270305| (-0.18;  0.31)|   0.612|
+|1978-1979             |  0.0019118| 0.1298141| (-0.25;  0.26)|   0.988|
+|1979-1980             |  0.0019118| 0.1298141| (-0.25;  0.26)|   0.988|
+|1980-1981             | -0.0510792| 0.1292914| (-0.30;  0.20)|   0.693|
+|1981-1982             | -0.0030148| 0.1271550| (-0.25;  0.25)|   0.981|
+|1982-1983             |  0.1115175| 0.1227569| (-0.13;  0.35)|   0.364|
+|1983-1984             |  0.0273161| 0.1258983| (-0.22;  0.27)|   0.828|
+|1984-1985             | -0.1208734| 0.1327298| (-0.38;  0.14)|   0.362|
+|1985-1986             | -0.2417971| 0.1397247| (-0.52;  0.03)|   0.084|
+|1986-1987             | -0.0346893| 0.1285424| (-0.29;  0.22)|   0.787|
+|1987-1988             | -0.1027360| 0.1317965| (-0.36;  0.16)|   0.436|
+|1988-1989             | -0.2176491| 0.1320108| (-0.48;  0.04)|   0.099|
+|1989-1990             | -0.3041787| 0.1314209| (-0.56; -0.05)|   0.021|
+|1990-1991             | -0.2215179| 0.1271370| (-0.47;  0.03)|   0.081|
+|1991-1992             | -0.4236381| 0.1385688| (-0.70; -0.15)|   0.002|
+|1992-1993             | -0.3067667| 0.1314542| (-0.56; -0.05)|   0.020|
+|1993-1994             | -0.3820715| 0.1358873| (-0.65; -0.12)|   0.005|
+|1994-1995             | -0.4921488| 0.1433802| (-0.77; -0.21)|   0.001|
+|1995-1996             | -0.3684377| 0.1300296| (-0.62; -0.11)|   0.005|
+|1996-1997             | -0.3517095| 0.1291228| (-0.60; -0.10)|   0.006|
+|1997-1998             | -0.2188828| 0.1227432| (-0.46;  0.02)|   0.075|
+|1998-1999             | -0.3354370| 0.1282640| (-0.59; -0.08)|   0.009|
+|1999-2000             | -0.3856509| 0.1309883| (-0.64; -0.13)|   0.003|
+|2000-2001             | -0.1092535| 0.1184604| (-0.34;  0.12)|   0.356|
+|2001-2002             | -0.1557096| 0.1201757| (-0.39;  0.08)|   0.195|
+|2002-2003             | -0.3517095| 0.1291230| (-0.60; -0.10)|   0.006|
+|2003-2004             | -0.1928606| 0.1216516| (-0.43;  0.05)|   0.113|
+|2004-2005             | -0.1872482| 0.1217808| (-0.43;  0.05)|   0.124|
+|2005-2006             | -0.2203466| 0.1229214| (-0.46;  0.02)|   0.073|
+|2006-2007             | -0.3731218| 0.1291269| (-0.63; -0.12)|   0.004|
+|2007-2008             | -0.3312835| 0.1272634| (-0.58; -0.08)|   0.009|
+|2008-2009             | -0.1158522| 0.1195396| (-0.35;  0.12)|   0.332|
+|2009-2010             | -0.0873887| 0.1187245| (-0.32;  0.15)|   0.462|
+|2010-2011             | -0.0690321| 0.1182212| (-0.30;  0.16)|   0.559|
+|2011-2012             | -0.3048899| 0.1261539| (-0.55; -0.06)|   0.016|
+|2012-2013             | -0.1062350| 0.1192594| (-0.34;  0.13)|   0.373|
+|2013-2014             | -0.1062350| 0.1192594| (-0.34;  0.13)|   0.373|
+|2014-2015             |  0.0163922| 0.1160962| (-0.21;  0.24)|   0.888|
+|2015-2016             | -0.1872482| 0.1217808| (-0.43;  0.05)|   0.124|
+|2016-2017             | -0.2433833| 0.1237556| (-0.49;  0.00)|   0.049|
+|2017-2018             | -0.1256048| 0.1198289| (-0.36;  0.11)|   0.295|
+|2018-2019             | -0.0600277| 0.1179806| (-0.29;  0.17)|   0.611|
+|Atlantic division     | -0.8016042| 0.0989169| (-1.00; -0.61)|   0.000|
+|Central division      | -0.8667805| 0.0981918| (-1.06; -0.67)|   0.000|
+|Midwest division      | -0.8698020| 0.1009794| (-1.07; -0.67)|   0.000|
+|Northwest division    | -0.7167602| 0.1194368| (-0.95; -0.48)|   0.000|
+|Pacific division      | -0.9125378| 0.0992412| (-1.11; -0.72)|   0.000|
+|Southeast division    | -0.8610716| 0.1210921| (-1.10; -0.62)|   0.000|
+|Southwest division    | -0.6650775| 0.1189080| (-0.90; -0.43)|   0.000|
+|*Homophily*           |  0.0122759| 0.0651683| (-0.12;  0.14)|   0.851|
+
+</div>
 
 
 
-## ERGM model fit {.appendix}
+## Weighted ERGM model fit {.appendix}
 
 <div class="layout-chunk" data-layout="l-body">
 
