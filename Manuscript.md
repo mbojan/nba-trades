@@ -171,7 +171,7 @@ Table: (\#tab:dyadic-trade-counts)**Distribution of dyadic trade counts**. Frequ
 </div>
 
 
-At this point one could either choose a non-Poissonian reference measure or simplify data by dychotomizing the counts (any number of trades vs no trades at all) and proceeding with a binary ERGM. To make our conclusions more robust and for illustrative purposes with provide both types of results.
+At this point one could either choose a non-Poissonian reference measure or simplify data by dychotomizing the counts (any number of trades vs no trades at all) and proceeding with a binary ERGM. The homophily coeficient binary ERGM controlling for season- and division-specific trading rates is equal to 
 
 
 
