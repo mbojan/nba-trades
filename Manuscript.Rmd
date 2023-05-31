@@ -351,20 +351,59 @@ In short, the empirical patterns do not support the popular claim that NBA teams
 
 It is worth mentioning that the models we have estimated in the results for Figure \@ref(fig:seasonal-ergms) are actually no different from what would have been possible through a generalized linear model predicting the (weighted) number of ties observed between pairs of teams. However, the value of introducing the weighted ERGM approach with these data is that if subsequent researchers want to take the next step to provide an explanatory account that further examines which teams are likely to trade with which others, this modeling framework would allow for the simultaneous estimation of predictive factors that variously operate at the node level (e.g., is a team that finished lower in the previous year's standings more likely to trade), the dyad level (e.g., are teams with higher total salaries more likely to trade with other teams who have lower total salaries), or structural features above the dyad (e.g., the tendency to form trade-triples or larger configurations through multi-team deals). The GLM framework would not be able to estimate each of these types of features in such a model without violating model assumptions (e.g., some of these are explicitly modeling the *dependency* between multiple trades).^[Additionally, the MRQAP framework would allow us to test the primary form of our question as a properly conditioned test for a weighted outcome, and to allow extensions that include testing nodal and dyadic covariates as described above. However, if structural features such as multi-team configurations or deals are part of those predictions, MRQAP proves more difficult for including such "supra-dyadic" structural features.] As such, in addition to our primary empirical conclusions, we hope that the illustration if how the weighted ERGM could be beneficial serves as a useful introduction to this modeling framework, which could be extended by future researchers using the data we provide.
 
+
+## Details of model specification {.appendix}
+
+Basic notation:
+
+- $N$ -- number of unique team-season pairs
+- $i, j \in \{1, ..., N\}$ -- team playing in a season (a team-season pair)
+- $\{s_1, ..., s_i, ..., s_N\}$ -- season of each team-season pair
+- $s_i \in \{1, ..., s, ..., S\}$ -- seasons
+- $\{d_1, ..., d_i, ..., d_N\}$ -- division of each team-season pair
+- $d_i \in \{1, ..., d, ..., D\}$ -- divisions
+- $[y_{ij}]_{N \times N}$ -- A block-diagonal adjacency matrix of trades between teams in  seasons. For simplicity, but abusing notation slightly, $y_{ij}$ is the number of trades in a season between teams $i$ and $j$ in case of valued ERGMs and, in the case of binary ERGM, trade count dichotomised to $\{0,1\}$ (no trade vs any number of trades).
+
+In words, each node of the network corresponds to a team playing in the particular season. Nodes are grouped into seasonal blocks such that trades can happen only within seasons (ties within blocks) but cannot happen between seasons (no ties between blocks).
+
+The models use the following sufficient statistics:
+
+- *Season-specific propensity to trade* represented by the number of trade participations by teams in season $s$:
+
+$$g_1(y, s) = \sum_{i,j:\; s_i=s \,\vee\, s_j=s} y_{ij}$$
+
+- *Division-specific propensity to trade* represented by the number of trade participations by teams in division $d$:
+
+$$g_1(y, d) = \sum_{i,j:\; d_i = d \,\vee\, d_j=d} y_{ij}$$
+
+
+- *Propensity towards within-division trading* represented by the number of trades involving teams from the same division:
+
+$$g_2(y) = \sum_{i,j:\; d_i = d_j} y_{ij}$$
+
+- *Over-/under-dispersion* statistic which modifies the reference measure into a Conway-Maxwell-Poisson-reference ERGM [c.f. @krivit2012, sec. 5.2.3]:
+
+$$g_3(y) = \sum_{i,j} \log(y_{ij}!)$$
+
+
+Pooled binary ERGM is specified as:
+
+$$P( Y = y ) = \frac{\exp \left(
+\sum_{s=2}^S \theta_s g_1 (y, s) +
+\sum_{d=1}^D \theta_d g_1 (y, d) +
+\theta_2 g_2 (y) \right)}{\kappa}$$
+
+
+Pooled valued ERGM  is specified as:
+
+$$P( Y = y ) = \frac{\exp \left(
+\theta_3 g_3 (y) + 
+\sum_{s=1}^S \theta_s g_1 (y, s) +
+\theta_2 g_2 (y) \right)}{\kappa}$$
+
+
 ## Binary ERGM model fit {.appendix}
 
-$$P( Y = y ) = \frac{\exp (
-\sum_{s=2}^S \theta_s g_1 (y, s) +
-\sum_{d=1}^S \theta_d g_1 (y, d) +
-\theta_h g_2 (y))}{\kappa(\theta_s, \theta_d, \theta_h)}$$
-
-where the sufficient statistics are:
-
-- $g_1(y, s)$ -- number of trade participations in season $s$
-- $g_1(y, d)$ -- number of trade participations by teams in division $d$
-- $g_2(y)$ -- number of trades involving teams from the same divisions
-
-The model is constrained to within-season dyads only.
 
 ```{r model-binary-table}
 # Model: privaterepo/estimation/ergm-pooled-binary-4
@@ -386,18 +425,6 @@ withr::with_options(
 net ~ CMP + nodefactor("season", levels = NULL, form = "sum") + 
     nodematch("div")
 ```
-
-
-$$P( Y = y ) = \frac{\exp (
-\text{CMP} 
-\sum_{s=2}^S \theta_s g_1 (y, s) +
-\theta_h g_2 (y))}{\kappa(\theta_s, \theta_d, \theta_h)}$$
-
-where the sufficient statistics are:
-
-- 
-
-The model is constrained to within-season dyads only.
 
 
 ```{r model1-table}
