@@ -175,7 +175,7 @@ Table: (\#tab:dyadic-trade-counts)**Distribution of dyadic trade counts**. Frequ
 
 At this point we could either choose a non-Poissonian reference measure or simplify data by dichotomizing the counts (any number of trades vs no trades at all) and proceeding with a binary ERGM. We ran both versions, reaching the same conclusion. The homophily coefficient in the **binary** ERGM fit to all seasonal trade networks simultaneously, including season- and division-specific effects, is equal to 0.012 (standard error of 0.065, z-statistic of 0.188) again showing no avoidance patterns. The complete model is presented in Table \@ref(tab:model-binary-table) in the Appendix.   
 
-Applying the **valued** ERGM--to account for the caveats raised above, and with the properly selected reference distribution, we again find that in *none* of the seasons do teams exhibit a tendency to avoid trading with other teams from within their division. This is summarized with the "funnel plot" presented in Figure \@ref(fig:seasonal-ergms), that shows each of homophily coefficients from season-specific weighted ERGMs fall within the white cone of statistical *in*significance.
+Applying the **valued** ERGM--to account for the caveats raised above, and with the Conway-Maxwell-Poisson reference measure, we again find that in *none* of the seasons do teams exhibit a tendency to avoid trading with other teams from within their division. This is summarized with the "funnel plot" presented in Figure \@ref(fig:seasonal-ergms), that shows each of homophily coefficients from season-specific weighted ERGMs fall within the white cone of statistical *in*significance.
 
 <!--
 ![Figure 5. **Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)](ergm-results_files/figure-gfm/B-nodematch-funnel-allinone-1.png)
@@ -191,7 +191,7 @@ Applying the **valued** ERGM--to account for the caveats raised above, and with 
 
 
 
-To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume, similarly to the binary ERGM mentioned above. These results are presented in Table \@ref(tab:model1-table-short). In this final specification, we find an aggregate same-division homophily effect (coefficient 0.006, standard error of 0.059, z-statistic of 0.102), that again shows no avoidance pattern. Fitting similar models to the periods 1976-2004 and 2004-2019 separately leads to almost identical results.[^periodModels]
+To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume, similarly to the binary ERGM mentioned above.[^modelSpecification] These results are presented in Table \@ref(tab:model1-table-short). In this final specification, we find an aggregate same-division homophily effect (coefficient 0.006, standard error of 0.059, z-statistic of 0.102), that again shows no avoidance pattern. Fitting similar models to the periods 1976-2004 and 2004-2019 separately leads to almost identical results.[^periodModels]
 
 
 <div class="layout-chunk" data-layout="l-body">
@@ -208,6 +208,8 @@ Table: (\#tab:model1-table-short)**Valued ERGM fitted to pooled seasonal data**.
 
 [^periodModels]: Results can be obtained from the authors upon request.
 
+[^modelSpecification]: Pooling was performed by merging all seasonal networks into a single block-diagonal adjacency matrix and fitting a single model with block-diagonal sample space contraints. Further model specification details are presented in the Appendix.
+
 
 # Discussion
 
@@ -215,7 +217,59 @@ In short, the empirical patterns do not support the popular claim that NBA teams
 
 It is worth mentioning that the models we have estimated in the results for Figure \@ref(fig:seasonal-ergms) are actually no different from what would have been possible through a generalized linear model predicting the (weighted) number of ties observed between pairs of teams. However, the value of introducing the weighted ERGM approach with these data is that if subsequent researchers want to take the next step to provide an explanatory account that further examines which teams are likely to trade with which others, this modeling framework would allow for the simultaneous estimation of predictive factors that variously operate at the node level (e.g., is a team that finished lower in the previous year's standings more likely to trade), the dyad level (e.g., are teams with higher total salaries more likely to trade with other teams who have lower total salaries), or structural features above the dyad (e.g., the tendency to form trade-triples or larger configurations through multi-team deals). The GLM framework would not be able to estimate each of these types of features in such a model without violating model assumptions (e.g., some of these are explicitly modeling the *dependency* between multiple trades).^[Additionally, the MRQAP framework would allow us to test the primary form of our question as a properly conditioned test for a weighted outcome, and to allow extensions that include testing nodal and dyadic covariates as described above. However, if structural features such as multi-team configurations or deals are part of those predictions, MRQAP proves more difficult for including such "supra-dyadic" structural features.] As such, in addition to our primary empirical conclusions, we hope that the illustration if how the weighted ERGM could be beneficial serves as a useful introduction to this modeling framework, which could be extended by future researchers using the data we provide.
 
+
+## Details of model specification {.appendix}
+
+Basic notation:
+
+- $N$ -- number of unique team-season pairs
+- $i, j \in \{1, ..., N\}$ -- team playing in a season (a team-season pair)
+- $\{s_1, ..., s_i, ..., s_N\}$ -- season of each team-season pair
+- $s_i \in \{1, ..., s, ..., S\}$ -- seasons
+- $\{d_1, ..., d_i, ..., d_N\}$ -- division of each team-season pair
+- $d_i \in \{1, ..., d, ..., D\}$ -- divisions
+- $[y_{ij}]_{N \times N}$ -- A block-diagonal adjacency matrix of trades between teams in  seasons. For simplicity, but abusing notation slightly, $y_{ij}$ is the number of trades in a season between teams $i$ and $j$ in case of valued ERGMs and, in the case of binary ERGM, trade count dichotomised to $\{0,1\}$ (no trade vs any number of trades).
+
+In words, each node of the network corresponds to a team playing in the particular season. Nodes are grouped into seasonal blocks such that trades can happen only within seasons (ties within blocks) but cannot happen between seasons (no ties between blocks).
+
+The models use the following sufficient statistics:
+
+- *Season-specific propensity to trade* represented by the number of trade participations by teams in season $s$:
+
+$$g_1(y, s) = \sum_{i,j:\; s_i=s \,\vee\, s_j=s} y_{ij}$$
+
+- *Division-specific propensity to trade* represented by the number of trade participations by teams in division $d$:
+
+$$g_1(y, d) = \sum_{i,j:\; d_i = d \,\vee\, d_j=d} y_{ij}$$
+
+
+- *Propensity towards within-division trading* represented by the number of trades involving teams from the same division:
+
+$$g_2(y) = \sum_{i,j:\; d_i = d_j} y_{ij}$$
+
+- *Over-/under-dispersion* statistic which modifies the reference measure into a Conway-Maxwell-Poisson-reference ERGM [c.f. @krivit2012, sec. 5.2.3]:
+
+$$g_3(y) = \sum_{i,j} \log(y_{ij}!)$$
+
+
+Pooled binary ERGM is specified as:
+
+$$P( Y = y ) = \frac{\exp \left(
+\sum_{s=2}^S \theta_s g_1 (y, s) +
+\sum_{d=1}^D \theta_d g_1 (y, d) +
+\theta_2 g_2 (y) \right)}{\kappa}$$
+
+
+Pooled valued ERGM  is specified as:
+
+$$P( Y = y ) = \frac{\exp \left(
+\theta_3 g_3 (y) + 
+\sum_{s=1}^S \theta_s g_1 (y, s) +
+\theta_2 g_2 (y) \right)}{\kappa}$$
+
+
 ## Binary ERGM model fit {.appendix}
+
 
 <div class="layout-chunk" data-layout="l-body">
 
@@ -280,6 +334,9 @@ Table: (\#tab:model-binary-table)Full results for the binary ERG model fit to po
 
 
 ## Weighted ERGM model fit {.appendix}
+
+
+
 
 <div class="layout-chunk" data-layout="l-body">
 

@@ -296,7 +296,7 @@ structure(
 
 At this point we could either choose a non-Poissonian reference measure or simplify data by dichotomizing the counts (any number of trades vs no trades at all) and proceeding with a binary ERGM. We ran both versions, reaching the same conclusion. The homophily coefficient in the **binary** ERGM fit to all seasonal trade networks simultaneously, including season- and division-specific effects, is equal to 0.012 (standard error of 0.065, z-statistic of 0.188) again showing no avoidance patterns. The complete model is presented in Table \@ref(tab:model-binary-table) in the Appendix.   
 
-Applying the **valued** ERGM--to account for the caveats raised above, and with the properly selected reference distribution, we again find that in *none* of the seasons do teams exhibit a tendency to avoid trading with other teams from within their division. This is summarized with the "funnel plot" presented in Figure \@ref(fig:seasonal-ergms), that shows each of homophily coefficients from season-specific weighted ERGMs fall within the white cone of statistical *in*significance.
+Applying the **valued** ERGM--to account for the caveats raised above, and with the Conway-Maxwell-Poisson reference measure, we again find that in *none* of the seasons do teams exhibit a tendency to avoid trading with other teams from within their division. This is summarized with the "funnel plot" presented in Figure \@ref(fig:seasonal-ergms), that shows each of homophily coefficients from season-specific weighted ERGMs fall within the white cone of statistical *in*significance.
 
 <!--
 ![Figure 5. **Homophily Coefficients and Standard Errors from Weighted Exponential Random Graph Models.** (including base-rate effects)](ergm-results_files/figure-gfm/B-nodematch-funnel-allinone-1.png)
@@ -326,7 +326,7 @@ legend(
 ```
 
 
-To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume, similarly to the binary ERGM mentioned above. These results are presented in Table \@ref(tab:model1-table-short). In this final specification, we find an aggregate same-division homophily effect (coefficient 0.006, standard error of 0.059, z-statistic of 0.102), that again shows no avoidance pattern. Fitting similar models to the periods 1976-2004 and 2004-2019 separately leads to almost identical results.[^periodModels]
+To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model, we also fit a pooled ERGM across all seasons, including a base-rate effect for each year's trade volume, similarly to the binary ERGM mentioned above.[^modelSpecification] These results are presented in Table \@ref(tab:model1-table-short). In this final specification, we find an aggregate same-division homophily effect (coefficient 0.006, standard error of 0.059, z-statistic of 0.102), that again shows no avoidance pattern. Fitting similar models to the periods 1976-2004 and 2004-2019 separately leads to almost identical results.[^periodModels]
 
 
 ```{r model1-table-short}
@@ -343,6 +343,8 @@ To summarize the results from Figure \@ref(fig:seasonal-ergms) in a single model
 
 
 [^periodModels]: Results can be obtained from the authors upon request.
+
+[^modelSpecification]: Pooling was performed by merging all seasonal networks into a single block-diagonal adjacency matrix and fitting a single model with block-diagonal sample space contraints. Further model specification details are presented in the Appendix.
 
 
 # Discussion
