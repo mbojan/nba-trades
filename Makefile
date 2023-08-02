@@ -78,8 +78,11 @@ publish: Manuscript.html NBA_Trades.html     ## Publish manuscript to '/docs'
 
 just-render:          ## Render the manuscript without processing its prerequisites.
 	Rscript -e 'rmarkdown::render("Manuscript.Rmd")'
+	
+pdf:		## Just render manuscript to PDF
+	Rscript -e 'rmarkdown::render("Manuscript.Rmd", output_format = "bookdown::pdf_document2")'
 
-.PHONY: paper publish just-render
+.PHONY: paper publish just-render pdf
 
 
 

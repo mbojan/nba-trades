@@ -17,6 +17,8 @@ output:
     code_folding: false
     keep_md: true
   bookdown::word_document2: default
+  bookdown::pdf_document2:
+    keep_tex: true
 link-citations: true
 repository_url: https://github.com/mbojan/nba-trades
 bibliography: nba_trades.bib
