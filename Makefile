@@ -96,7 +96,7 @@ debug:
 
 # NSW zip file
 
-nsw:
-	zip -r nsw.zip Manuscript.tex Manuscript_files/figure-pdf nba-trades.bib cup-journal.cls cup-logo-new.pdf
+nws:
+	zip -r nws.zip Manuscript.tex Manuscript_files/figure-pdf nba-trades.bib cup-journal.cls cup-logo-new.pdf
 
-.PHONY: nsw
+.PHONY: nws
