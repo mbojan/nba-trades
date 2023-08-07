@@ -365,7 +365,10 @@ It is worth mentioning that the models we have estimated in the results for Figu
 We appreciate feedback we received on previous iterations of this work from Skye Bender-deMoll, Pavel Krivitsky and David Schaefer.
 \end{acknowledgement}
 
-\paragraph{Competing interests} None.
+
+Competing interests. None.
+
+
 
 # References {.unnumbered}
 
