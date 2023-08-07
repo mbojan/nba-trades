@@ -3,14 +3,26 @@ title: "Do NBA Teams Avoid Trading within Their Own Division?"
 author: 
   - name: jimi adams
     orcid: "0000-0001-5043-1149"
-    affiliations: "University of Colorado Denver, USA"
+    email: "JIMI.ADAMS@ucdenver.edu"
+    affiliations: 
+      - name: "University of Colorado Denver"
+        city: "Denver, CO"
+        country: USA
+        postal-code: "80217-3364"
   - name: Michał Bojanowski
     orcid: "0000-0001-7503-852X"
     affiliations:
-      - name: "Autonomous University of Barcelona, Barcelona, Spain"
-      - name: "Kozminski University, Warsaw, Poland"
+      - name: "Autonomous University of Barcelona"
+        city: "Bellaterra (Barcelona)"
+        country: Spain
+        postal-code: "08-193"
+      - name: "Kozminski University"
+        city: Warsaw
+        country: Poland
+        postal-code: "03-301"
 date: "May 10, 2022"
 abstract: "Within US professional sports, trades within one's own division are often perceived to be disadvantageous. We ask how common this practice is. To examine this question, we construct a date-stamped network of all trades in the NBA between June 1976 and May 2019. We then use season-specific weighted exponential random graph models to estimate the likelihood of teams avoiding within-division trade partners, and how consistent that pattern is across the observed period. In addition to the empirical question, this analysis serves to demonstrate the necessity and difficulty of constructing the proper baseline for statistical comparison. We find limited-to-no support for the popular perception."
+keywords: [trade networks, nba, sports, exponential random graph models, weighted networks]
 format: 
   cambridge-medium-pdf:
     keep-tex: true
@@ -353,6 +365,7 @@ It is worth mentioning that the models we have estimated in the results for Figu
 We appreciate feedback we received on previous iterations of this work from Skye Bender-deMoll, Pavel Krivitsky and David Schaefer.
 \end{acknowledgement}
 
+\paragraph{Competing interests} None.
 
 # References {.unnumbered}
 
