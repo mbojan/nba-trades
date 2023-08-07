@@ -349,7 +349,19 @@ In short, the empirical patterns do not support the popular claim that NBA teams
 It is worth mentioning that the models we have estimated in the results for Figure [-@fig-seasonal-ergms] are actually no different from what would have been possible through a generalized linear model predicting the (weighted) number of ties observed between pairs of teams. However, the value of introducing the weighted ERGM approach with these data is that if subsequent researchers want to take the next step to provide an explanatory account that further examines which teams are likely to trade with which others, this modeling framework would allow for the simultaneous estimation of predictive factors that variously operate at the node level (e.g., is a team that finished lower in the previous season's standings more likely to trade), the dyad level (e.g., are teams with higher total salaries more likely to trade with other teams who have lower total salaries), or structural features above the dyad (e.g., the tendency to form trade-triples or larger configurations through multi-team deals). The GLM framework would not be able to estimate each of these types of features in such a model without violating model assumptions (e.g., some of these are explicitly modeling the *dependency* between multiple trades).^[Additionally, the MRQAP framework would allow us to test the primary form of our question as a properly conditioned test for a weighted outcome, and to allow extensions that include testing nodal and dyadic covariates as described above. However, if structural features such as multi-team configurations or deals are part of those predictions, MRQAP proves more difficult for including such "supra-dyadic" structural features.] As such, in addition to our primary empirical conclusions--that within division trades are *not* avoided by NBA franchises--we hope that the illustration of how the weighted ERGM could be beneficial serves as a useful introduction to this modeling framework, and may be put to further examination by future researchers using the data and code we provide.
 
 
-## Details of model specification {.appendix}
+\begin{acknowledgement}
+We appreciate feedback we received on previous iterations of this work from Skye Bender-deMoll, Pavel Krivitsky and David Schaefer.
+\end{acknowledgement}
+
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+\appendix
+
+# Details of model specification {.appendix}
 
 Basic notation:
 
@@ -399,7 +411,7 @@ $$P( Y = y ) = \frac{\exp \left(
 \theta_2 g_2 (y) \right)}{\kappa}$$
 
 
-## Binary ERGM model fit {.appendix}
+# Binary ERGM model fit {.appendix}
 
 
 ```{r tbl-model-binary-table}
@@ -415,7 +427,7 @@ withr::with_options(
 ```
 
 
-## Weighted ERGM model fit {.appendix}
+# Weighted ERGM model fit {.appendix}
 
 ```{r, eval=FALSE, include=FALSE}
 net ~ CMP + nodefactor("season", levels = NULL, form = "sum") + 
@@ -433,8 +445,3 @@ withr::with_options(
     knitr::kable(align = "lrrrr")
   })
 ```
-
-
-## Acknowledgements {.appendix}
-
-We appreciate feedback we received on previous iterations of this work from Skye Bender-deMoll, Pavel Krivitsky and David Schaefer.
