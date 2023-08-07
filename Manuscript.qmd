@@ -15,6 +15,7 @@ format:
   cambridge-medium-pdf:
     keep-tex: true
     cite-method: biblatex
+    number-sections: true
     journal: nws
     year: 2023
     volume: NA
