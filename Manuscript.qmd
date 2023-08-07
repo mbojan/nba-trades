@@ -173,13 +173,17 @@ To address our main research question, we needed to supplement these trade data 
 
 Analytically, we proceed in three steps, which allow us to address two simultaneous aims. Primarily, these steps allow us to build an appropriate test of our research question. Secondarily, these steps also allow us to illustrate the proper way to statistically condition a question such as this, and to explain the need for doing so. This combination further motivates our usage of a relatively recent development for statistically modeling weighted network data. 
 
-<!-- Manually wrap in distill HTML tags to get a proper caption. -->
-<div class="figure">
-```{r animation, echo=FALSE}
-htmltools::tags$iframe(src = 'NBA_Trades.html', width = '80%', height = '600px')
+```{r fig-network-movie, eval=FALSE}
+#| fig-cap: "**Dynamic Visualization of Annual Trade Networks** Availabe in the online supplement. Note: Intra-division trades are highlighted in red. Node color and position indicates division. The upper-right menu allows the animation speed to be adjusted while visualizing the entire sequence, or the forward/back buttons at the bottom can be used to step-wise animate the visualization one annual slice (trade season) at a time."
+if(knitr::is_html_output()) {
+  cat("<div class='figure'>\n")
+  htmltools::tags$iframe(src = 'NBA_Trades.html', width = '80%', height = '600px')
+  cat('<p class="caption">Video 1. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position indicates division. The upper-right menu allows the animation speed to be adjusted while visualizing the entire sequence, or the forward/back buttons at the bottom can be used to step-wise animate the visualization one annual slice (trade season) at a time.</p>
+</div>\n')
+} else {
+  knitr::include_graphics("movie-still.png")
+}
 ```
-<p class="caption">Video 1. **Dynamic Visualization of Annual Trade Networks** Note: Intra-division trades are highlighted in red. Node color and position indicates division. The upper-right menu allows the animation speed to be adjusted while visualizing the entire sequence, or the forward/back buttons at the bottom can be used to step-wise animate the visualization one annual slice (trade season) at a time.</p>
-</div>
 
 Our first step is to tabulate the number of trades observed both within and across divisions. This tabulation is presented in the form of a mixing matrix, which shows---at the level of divisions---how many trades occur between teams of the same division (diagonal) and between teams of differing divisions (off-diagonal). We present these mixing matrices in two aggregations. The first represents when there were four divisions, i.e., all seasons prior to division expansion, a period which spans from 1976-2004. The second window began in 2005 and runs through the end of our analytic period at the end of the 2018-19 season, during which the teams were separated into six divisions. To provide a visual representation of the changes in these division-specific trade patterns across the examined period, Video 1 presents a dynamic visualization of each season's trade network.^[The appendices also include full replication code for all analyzes conducted and the generation of this dynamic visualization.]
 
